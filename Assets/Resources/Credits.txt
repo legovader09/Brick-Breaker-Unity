@@ -1,0 +1,16 @@
+﻿SFX:
+1a. https://opengameart.org/content/8-bit-sound-effects-library (By www.littlerobotsoundfactory.com / CC-By 3) //
+1b. https://opengameart.org/content/zippo-click-sound (By dawith / CC0) //
+1c. https://freesound.org/people/EVRetro/sounds/501104/ (By EVRetro / CC0) //
+
+Music:
+2a. https://opengameart.org/content/skulls-adventure-music (By Mopz / CC0) //
+2b. https://opengameart.org/content/boss-battle-2-8-bit (By nene / CC0) //
+2c. https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles (By SketchyLogic / CC0) //
+
+Art:
+3a. https://opengameart.org/content/heart-pixel-art (By DanSevenStar.xyz / CC-By 4 & CC-By 3) //
+3b. https://opengameart.org/content/breakout-brick-breaker-tile-set-free (By imaginelabs / CC0) //
+3c. https://opengameart.org/content/game-icons (By Kenney.nl / CC0) //
+
+All other resources were created by Dominik Hauerstein.
