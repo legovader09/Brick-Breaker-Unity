@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using PlayerIOClient;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -63,9 +61,8 @@ public class MainMenu : MonoBehaviour
     public void ShowLeaderboardGUI()
     {
         pnlLeaderboard.SetActive(true);
-
         if (!pnlLeaderboard.GetComponent<HighscoreController>().hasLoaded) //only loads it once per instance of the main menu to save data usage.
-            StartCoroutine(pnlLeaderboard.GetComponent<HighscoreController>().GetScores());
+            StartCoroutine(pnlLeaderboard.GetComponent<HighscoreController>().GetHighscores());
     }
 
     public void CustomLevelGUI()

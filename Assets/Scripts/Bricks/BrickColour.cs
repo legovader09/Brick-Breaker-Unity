@@ -20,7 +20,7 @@ namespace Assets.Scripts
 
     public static class BrickColour
     {
-        public static Sprite getBrickColour(BrickColours colour)
+        public static Sprite GetBrickColour(BrickColours colour)
         {
             var tempCol = (int)colour;
             string colourCode = $"{(tempCol < 10 ? "0" : "")}"; //simple check to see if ID is below 10, if so add 0 at the front of a string.
@@ -28,7 +28,7 @@ namespace Assets.Scripts
             return Resources.Load<Sprite>($"Bricks/{colourCode}-Breakout-Tiles");
         }
 
-        internal static BrickColours getNextColour(BrickColours colour)
+        internal static BrickColours GetNextColour(BrickColours colour)
         {
             BrickColours temp;
             switch (colour) //due to the nature of the brick ID numbers, I could not simply iterate the colour codes, meaning a long switch case was the next best thing here.

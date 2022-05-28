@@ -242,7 +242,7 @@ public class GameTracker : MonoBehaviour
                     break;
                 case ',': //new row.
                     tempBrick.GetComponent<BrickComponent>().colour = 
-                        BrickColour.getNextColour(tempBrick.GetComponent<BrickComponent>().colour);
+                        BrickColour.GetNextColour(tempBrick.GetComponent<BrickComponent>().colour);
                     currentCoords = new Vector2(startingCoords.x, (int)(currentCoords.y - height));
                     break;
             }

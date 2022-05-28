@@ -49,8 +49,8 @@ public class Exit : MonoBehaviour
             if (!hasPressedConfirm)
             {
                 hasPressedConfirm = true; //this ensures you cannot spam click the confirm button and cause glitches when uploading highscore.
-                StartCoroutine(o.GetComponent<HighscoreController>().PostScores(d.ResultText.text, Globals.Score,
-                GetComponent<GameTracker>().currentWave)); //post score to database.
+                StartCoroutine(o.GetComponent<HighscoreController>().PostHighscore(d.ResultText.text, Globals.Score,
+                    GetComponent<GameTracker>().currentWave)); //post score to database.
 
                 while (o.GetComponent<HighscoreController>().postSuccess == null)
                     yield return null;

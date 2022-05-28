@@ -1,16 +1,17 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.Networking;
 using UnityEngine.UI;
+using System;
+using PlayerIOClient;
+using System.Collections.Generic;
 
 public class HighscoreController : MonoBehaviour
 {
     private readonly string secretKey = "bricker";
-    public string addScoreURL = "http://82.5.240.190:8080/addscore.php?";
-    public string highscoreURL = "http://82.5.240.190:8080/display.php";
+    private readonly string addScoreURL = "http://localhost:8080/addscore.php?";
+    private readonly string highscoreURL = "http://localhost:8080/display.php";
     internal bool hasLoaded;
     internal bool? postSuccess = null;
-
     public Text textField;
 
     /// <summary>
@@ -20,6 +21,49 @@ public class HighscoreController : MonoBehaviour
     /// <param name="score">The score they achieved.</param>
     /// <param name="level">The highest level they achieved</param>
     /// <returns></returns>
+    internal IEnumerator PostHighscore(string name, int score, int level)
+    {
+        Globals.ConnectToPlayerIO(name);
+        yield return new WaitUntil(() => Globals.consistentClient != null);
+
+        Globals.consistentClient.Leaderboards.Set("highscores", "score", score, null);
+        Globals.consistentClient.Leaderboards.Set("highscores", "levels", level, null);
+
+        postSuccess = true;
+        yield return true;
+    }
+
+    /// <summary>
+    /// Get the scores from the MySQL DB to display in a GUIText.
+    /// </summary>
+    /// <returns></returns>
+    internal IEnumerator GetHighscores()
+    {
+        if (Globals.ConnectToPlayerIO())
+        {
+            yield return new WaitUntil(() => Globals.consistentClient != null);
+
+            Globals.consistentClient.Leaderboards.GetTop("highscores", "score", 0, 20, null,
+            delegate (LeaderboardEntry[] e)
+            {
+                foreach (LeaderboardEntry entry in e)
+                {
+                    textField.text += string.Format("  {0}    {1}           {2}\n", entry.Rank, entry.ConnectUserId, entry.Score);
+                }
+            }); 
+        }
+
+        yield return null;
+    }
+
+    /// <summary>
+    /// Posts score to database.
+    /// </summary>
+    /// <param name="name">Username of player</param>
+    /// <param name="score">The score they achieved.</param>
+    /// <param name="level">The highest level they achieved</param>
+    /// <returns></returns>
+    [Obsolete("This method uses PHP and MySQL database connection which are no longer maintained. Use PostHighscore() instead.", true)]
     internal IEnumerator PostScores(string name, int score, int level)
     {
         postSuccess = true;
@@ -43,6 +87,7 @@ public class HighscoreController : MonoBehaviour
     /// Get the scores from the MySQL DB to display in a GUIText.
     /// </summary>
     /// <returns></returns>
+    [Obsolete("Use GetHighscores() instead.", true)]
     internal IEnumerator GetScores()
     {
         textField.text = "Loading Scores";
@@ -66,7 +111,8 @@ public class HighscoreController : MonoBehaviour
     /// </summary>
     /// <param name="strToEncrypt">String to encrypt</param>
     /// <returns></returns>
-    internal string Md5Sum(string strToEncrypt)
+    [Obsolete("", true)]
+    private string Md5Sum(string strToEncrypt)
     {
         System.Text.UTF8Encoding ue = new System.Text.UTF8Encoding();
         byte[] bytes = ue.GetBytes(strToEncrypt);

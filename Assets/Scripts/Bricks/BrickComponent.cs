@@ -13,7 +13,7 @@ public class BrickComponent : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.getBrickColour(colour); //when created, immediately fetch brick texture.
+        gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour); //when created, immediately fetch brick texture.
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -72,7 +72,7 @@ public class BrickComponent : MonoBehaviour
     {
         if (state == 1)
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.getBrickColour(colour + 1); //change to damaged version of the brick texture.
+            gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour + 1); //change to damaged version of the brick texture.
         }
         else if (state <= 0)
         {
