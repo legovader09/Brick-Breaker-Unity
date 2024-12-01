@@ -14,7 +14,7 @@ namespace Powerups
         // Start is called before the first frame update
         internal void SetMultiplier(float multiplyVal)
         {
-            IEnumerator mp = SetMultiplierEnumerator(multiplyVal);
+            var mp = SetMultiplierEnumerator(multiplyVal);
             StopCoroutine(mp);
             StartCoroutine(mp);
         }

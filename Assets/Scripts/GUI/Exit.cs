@@ -82,12 +82,12 @@ namespace GUI
             {
                 if (Globals.EndlessMode) //generate new endless level
                 {
-                    Globals.EndlessLevelData = new EndlessLevelGenerator().Generate();
+                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
                 }
                 else if (GetComponent<GameTracker>().currentWave >= Globals.AmountOfLevels) //start endless mode after completing the main levels.
                 {
                     Globals.EndlessMode = true;
-                    Globals.EndlessLevelData = new EndlessLevelGenerator().Generate();
+                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
                 }
                 GetComponent<GameTracker>().currentWave++;
                 if (Globals.Lives < 6) Globals.Lives++; else GetComponent<GameTracker>().UpdateScore(100); //add a life on every level completion, if player already has 6 lives, then give 100 points instead.

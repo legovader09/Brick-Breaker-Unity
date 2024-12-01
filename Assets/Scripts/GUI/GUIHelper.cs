@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using EventListeners;
-using JetBrains.Annotations;
 using Powerups;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +13,6 @@ namespace GUI
         public GameObject indicatorPrefab;
         public GameObject parent;
         public Vector3 initPosition;
-        [UsedImplicitly] public int amountOfIndicators;
         private readonly List<PowerupCodes> _powerList = new();
         private SoundHelper _soundHelper;
 
@@ -39,76 +36,90 @@ namespace GUI
         }
 
         /// <summary>
-        /// Cause an activated powerup to "blink" repeatedly.
+        /// Causes an activated powerup to "blink" repeatedly.
         /// </summary>
         /// <param name="p">The relevant <see cref="PowerupComponent.PowerupCodes"/> to flash.</param>
         /// <remarks>Make sure to call this function with <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"></see>.</remarks>
         internal IEnumerator ShowPowerupExpiring(PowerupCodes p)
         {
-            if (!_powerList.Contains(p)) yield break;
-            var g = GameObject.FindGameObjectsWithTag("Indicator");
-            foreach (var o in g)
-                if (o.GetComponent<PowerupIndicator>().PowerCode == p)
+            if (!_powerList.Contains(p))
+                yield break;
+
+            var indicators = GameObject.FindGameObjectsWithTag("Indicator");
+    
+            foreach (var indicator in indicators)
+            {
+                var powerupIndicator = indicator.GetComponent<PowerupIndicator>();
+
+                if (powerupIndicator == null || powerupIndicator.PowerCode != p) continue;
+                var image = indicator.GetComponent<Image>();
+
+                // Blink the indicator 6 times, i.e., for 3 seconds in total
+                const int blinkCount = 12;
+                const float halfBlinkDuration = 0.25f;
+
+                for (var i = 0; i < blinkCount; i++)
                 {
-                    var image = o.GetComponent<Image>();
-                    // 6 half seconds of flashing. = 3 seconds.
-                    for (var i = 0; i < 6; i++)
-                    {
-                        image.color = new(1f, 1f, 1f, 0.5f); //50% opacity
-                        _soundHelper.PlaySound("Sound/SFX/zipclick");
-                        yield return new WaitForSeconds(0.25f);
-                        
-                        image.color = new(1f, 1f, 1f, 1f); //100% opacity
-                        _soundHelper.PlaySound("Sound/SFX/zipclick");
-                        yield return new WaitForSeconds(0.25f);
-                    }
-                    break; // gameobject has been found, and only one of a type exists in the list of indicators.
+                    // alternate between 0.5 and 1 opacity
+                    SetImageOpacity(image, i % 2 == 0 ? 0.5f : 1f);
+                    _soundHelper.PlaySound("Sound/SFX/zipclick");
+                    yield return new WaitForSeconds(halfBlinkDuration);
                 }
+                break; // Exit loop after processing the found indicator
+            }
+        }
+
+        /// <summary>
+        /// Sets the alpha opacity of the given image.
+        /// </summary>
+        /// <param name="image">The image whose opacity needs to be set.</param>
+        /// <param name="opacity">The desired opacity level.</param>
+        private void SetImageOpacity(Image image, float opacity)
+        {
+            if (image == null) return;
+            image.color = new(1f, 1f, 1f, opacity);
         }
 
         /// <summary>
         /// Removes an active powerup's indicator from the sidebar.
         /// </summary>
-        /// <param name="p">The relevant <see cref="PowerupComponent.PowerupCodes"/> to remove.</param>
-        internal void RemovePowerupFromSidebar(PowerupCodes p)
+        /// <param name="powerUp">The relevant <see cref="PowerupComponent.PowerupCodes"/> to remove.</param>
+        internal void RemovePowerupFromSidebar(PowerupCodes powerUp)
         {
-            if (_powerList.Contains(p))
+            if (!_powerList.Contains(powerUp)) return;
+    
+            var indicators = GameObject.FindGameObjectsWithTag("Indicator");
+            var indicatorRemoved = false;
+    
+            foreach (var indicator in indicators)
             {
-                GameObject[] g = GameObject.FindGameObjectsWithTag("Indicator");
-                foreach (GameObject o in g)
-                    if (o.GetComponent<PowerupIndicator>().PowerCode == p)
-                    {
-                        Destroy(o);
-                        _powerList.Remove(p);
-                    }
+                var powerupIndicator = indicator.GetComponent<PowerupIndicator>();
+
+                if (powerupIndicator == null || powerupIndicator.PowerCode != powerUp) continue;
+                Destroy(indicator);
+                _powerList.Remove(powerUp);
+                indicatorRemoved = true;
+                break;
             }
+
+            if (indicatorRemoved) MoveIndicatorsDown();
         }
 
-
         /// <summary>
-        /// Removes all active powerups indicator from the sidebar.
+        /// Removes all active powerup indicators from the sidebar.
         /// </summary>
         internal void RemoveAllPowerups()
         {
-            for (int i = 1; i <= 16; i++)
+            var powerupIndicators = GameObject.FindGameObjectsWithTag("Indicator");
+    
+            foreach (var indicator in powerupIndicators)
             {
-                if (_powerList.Contains((PowerupCodes)i))
-                {
-                    GameObject[] g = GameObject.FindGameObjectsWithTag("Indicator");
-                    foreach (GameObject o in g)
-                        if (o.GetComponent<PowerupIndicator>().PowerCode == (PowerupCodes)i)
-                        {
-                            Destroy(o);
-                            _powerList.Remove((PowerupCodes)i);
-                        }
-                }
-            }
-        }
+                var powerupIndicatorComponent = indicator.GetComponent<PowerupIndicator>();
 
-        void Update()
-        {
-            amountOfIndicators = _powerList.Count;
-            gameObject.GetComponentInParent<GUIHelper>().MoveIndicatorsDown();
+                if (!powerupIndicatorComponent || !_powerList.Contains(powerupIndicatorComponent.PowerCode)) continue;
+                _powerList.Remove(powerupIndicatorComponent.PowerCode);
+                Destroy(indicator);
+            }
         }
 
         /// <summary>
@@ -116,15 +127,18 @@ namespace GUI
         /// </summary>
         private void MoveIndicatorsDown()
         {
-            GameObject[] g = GameObject.FindGameObjectsWithTag("Indicator");
-            int i = 0;
-            foreach (GameObject o in g)
+            var indicators = GameObject.FindGameObjectsWithTag("Indicator");
+            
+            var yOffset = initPosition.y;
+            var blockHeight = indicators.Length > 0 ? indicators[0].GetComponent<RectTransform>().rect.height : 0;
+
+            foreach (var indicator in indicators)
             {
-                o.transform.localPosition = new(
+                indicator.transform.localPosition = new(
                     initPosition.x,
-                    initPosition.y + (o.GetComponent<RectTransform>().rect.height * i), //move y scale down by 1 unit of block.
+                    yOffset,
                     initPosition.z);
-                i++;
+                yOffset += blockHeight; // Move y position down by the block height for the next indicator
             }
         }
     }

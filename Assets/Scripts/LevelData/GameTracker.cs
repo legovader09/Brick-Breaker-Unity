@@ -122,7 +122,7 @@ namespace LevelData
             Globals.Score = 0;
             scoreText.GetComponent<Text>().text = $"Score: {Globals.Score}";
             if (!Globals.CustomLevel) currentWave = 1; //if custom level, reset current wave (level) also.
-            if (Globals.EndlessMode) Globals.EndlessLevelData = new EndlessLevelGenerator().Generate();
+            if (Globals.EndlessMode) Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
         
             LoadNextWave();
 
@@ -173,13 +173,13 @@ namespace LevelData
         /// </summary>
         void DestroyAllBricksAndPowerups() 
         {
-            GameObject[] allObjects = GameObject.FindGameObjectsWithTag("Brick");
-            foreach (GameObject obj in allObjects)
+            var allObjects = GameObject.FindGameObjectsWithTag("Brick");
+            foreach (var obj in allObjects)
             {
                 Destroy(obj);
             }
             allObjects = GameObject.FindGameObjectsWithTag("Powerup");
-            foreach (GameObject obj in allObjects)
+            foreach (var obj in allObjects)
             {
                 Destroy(obj);
             }
@@ -189,12 +189,12 @@ namespace LevelData
                 Destroy(obj);
             }
             allObjects = GameObject.FindGameObjectsWithTag("Ball");
-            foreach (GameObject o in allObjects)
+            foreach (var o in allObjects)
             {
                 if (o.GetComponent<BallLogic>().IsFake) Destroy(o); else o.GetComponent<BallLogic>().ActivateFireBall(false);
             }
             allObjects = GameObject.FindGameObjectsWithTag("Indicator");
-            foreach (GameObject o in allObjects)
+            foreach (var o in allObjects)
             {
                 Destroy(o);
             }
@@ -211,12 +211,12 @@ namespace LevelData
         {
             gameObject.GetComponent<SoundHelper>().PlaySound($"Sound/BGM/BGM_{Globals.Random.Next(1, 6)}", true);
 
-            Vector2 currentCoords = startingCoords;
-            float width = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
-            float height = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.y;
+            var currentCoords = startingCoords;
+            var width = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
+            var height = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.y;
             DestroyAllBricksAndPowerups();
             Time.timeScale = 1f;
-            GameObject tempBrick = brickPrefab;
+            var tempBrick = brickPrefab;
             tempBrick.GetComponent<BrickComponent>().colour = BrickColours.Purple;
             string levelStruct;
             if (Globals.CustomLevel)
@@ -234,7 +234,7 @@ namespace LevelData
                 levelStruct = Resources.Load<TextAsset>($"Levels/level{currentWave}").text;
                 lvlIndicatorTxt.text = $"Level {currentWave}";
             }
-            foreach (char c in levelStruct)
+            foreach (var c in levelStruct)
             {
                 switch (c)
                 { //this will read the text file containing level data, and lay out the bricks according to the specification below:
@@ -259,7 +259,7 @@ namespace LevelData
         public void UpdateScore(int scoreToAdd)
         {
             if (Globals.GamePaused) return;
-            scoreToAdd = Mathf.FloorToInt(scoreToAdd * Globals.ScoreMultiplier); //add score * any multipliers, rounded to an int to match score datatype.
+            scoreToAdd = Mathf.FloorToInt(scoreToAdd * Globals.ScoreMultiplier);
             Instantiate(indicator, 
                     GameObject.FindGameObjectWithTag("Player").transform).
                 GetComponent<PointsIndicator>().ShowPoints(scoreToAdd);
@@ -268,29 +268,29 @@ namespace LevelData
             scoreText.GetComponent<Text>().text = $"Score: {Globals.Score}";
         }
 
-        #region "Settings menu UI"
+#region "Settings menu UI"
         public void SetVolumeSlider(Slider g)
         {
-            if (g.gameObject.name == "SFXSlider")
-                PlayerPrefs.SetFloat("sfxvol", g.value);
-            else if (g.gameObject.name == "BGMSlider")
+            switch (g.gameObject.name)
             {
-                PlayerPrefs.SetFloat("bgmvol", g.value);
-                gameObject.GetComponent<AudioSource>().volume = g.value;
+                case "SFXSlider":
+                    PlayerPrefs.SetFloat("sfxvol", g.value);
+                    break;
+                case "BGMSlider":
+                    PlayerPrefs.SetFloat("bgmvol", g.value);
+                    gameObject.GetComponent<AudioSource>().volume = g.value;
+                    break;
             }
-
         }
         public void HideUIMenu(GameObject menuPanel) => menuPanel.SetActive(false);
         public void ShowUIMenu(GameObject menuPanel)
         {
             menuPanel.SetActive(true);
 
-            if (menuPanel.name == "pnlSettings")
-            {
-                GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("sfxvol");
-                GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("bgmvol");
-            }
+            if (menuPanel.name != "pnlSettings") return;
+            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("sfxvol");
+            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("bgmvol");
         }
-        #endregion
+#endregion
     }
 }

@@ -15,10 +15,10 @@ namespace Player
     public class PlayerController : MonoBehaviour
     {
         private Vector2 _mousePos;
-        internal bool HasBallAttached = true;
-        internal Vector3 OriginalSize;
-        internal Vector3 EnlargedPaddle;
-        internal Vector3 ShrunkPaddle;
+        private bool _hasBallAttached = true;
+        private Vector3 _originalSize;
+        private Vector3 _enlargedPaddle;
+        private Vector3 _shrunkPaddle;
         private Vector2 _originalPosition;
         private GameObject _ball;
         [FormerlySerializedAs("LaserBeamPrefab")] public GameObject laserBeamPrefab;
@@ -37,9 +37,9 @@ namespace Player
             _ball = GameObject.FindGameObjectWithTag("Ball");
             _score = GameObject.Find("EventSystem").GetComponent<GameTracker>(); 
             _powerupUI = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
-            OriginalSize = gameObject.transform.localScale;
-            EnlargedPaddle = new(gameObject.transform.localScale.x * 1.5f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
-            ShrunkPaddle = new(gameObject.transform.localScale.x * 0.75f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
+            _originalSize = gameObject.transform.localScale;
+            _enlargedPaddle = new(gameObject.transform.localScale.x * 1.5f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
+            _shrunkPaddle = new(gameObject.transform.localScale.x * 0.75f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
             _originalPosition = gameObject.transform.position;
         }
 
@@ -50,7 +50,7 @@ namespace Player
 
         internal void ResetPaddleSize()
         {
-            gameObject.transform.localScale = OriginalSize;
+            gameObject.transform.localScale = _originalSize;
             _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.ShrinkPaddle);
             _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.GrowPaddle);
         }
@@ -64,11 +64,9 @@ namespace Player
                 {
                     if (_ball.GetComponent<BallLogic>().currentVelocity.y > 0) // if ball is going upwards
                     {
-                        GameObject g = GameObject.FindGameObjectWithTag("Powerup"); 
-                        if (g != null)
-                            _mousePos = Camera.main.ScreenToWorldPoint(g.transform.position); //follow powerup if there is one, if not keep following ball.
-                        else
-                            _mousePos = Camera.main.ScreenToWorldPoint(_ball.transform.position);
+                        GameObject powerUp = GameObject.FindGameObjectWithTag("Powerup");
+                        _mousePos = Camera.main.ScreenToWorldPoint(powerUp ? powerUp.transform.position : //follow powerup if there is one, if not keep following ball.
+                            _ball.transform.position);
                     }
                     else
                     {
@@ -86,17 +84,17 @@ namespace Player
 
         void LateUpdate()
         {
-            if (HasBallAttached && !Globals.GamePaused)
+            if (_hasBallAttached && !Globals.GamePaused)
             {
                 if ((Input.GetMouseButtonDown(0) && Input.mousePosition.y < 850) || Globals.AIMode)
                 {
-                    BallLogic b = _ball.GetComponent<BallLogic>();
-                    b.stuckToPlayer = false;
-                    HasBallAttached = false;
+                    var ball = _ball.GetComponent<BallLogic>();
+                    ball.stuckToPlayer = false;
+                    _hasBallAttached = false;
                 }
             }
 
-            if (_ball.GetComponent<BallLogic>().stuckToPlayer) HasBallAttached = true;
+            if (_ball.GetComponent<BallLogic>().stuckToPlayer) _hasBallAttached = true;
 
 #if UNITY_EDITOR //editor ONLY, AI mode will not work in the actual game. This mode is for testing purposes only.
             if (Input.GetKeyUp(KeyCode.T))
@@ -132,7 +130,7 @@ namespace Player
         /// Activates a powerup that has been picked up by the player.
         /// </summary>
         /// <param name="id">The ID of the powerup that has been collided with.</param>
-        internal void ActivatePowerup(PowerupComponent.PowerupCodes id)
+        private void ActivatePowerup(PowerupComponent.PowerupCodes id)
         {
             switch ((int)id)
             {
@@ -167,7 +165,7 @@ namespace Player
                 case 7: //Triple balls
                     for (int i = 0; i < 2; i++)
                     {
-                        HasBallAttached = false;
+                        _hasBallAttached = false;
                         GameObject temp = Instantiate(_ball, _ball.transform.parent, false);
                         temp.GetComponent<BallLogic>().IsFake = true;
                         temp.GetComponent<SpriteShapeRenderer>().color = Color.green;
@@ -180,13 +178,13 @@ namespace Player
                     _score.UpdateScore(50);
                     break;
                 case 8: //Shrink paddle
-                    gameObject.transform.localScale = ShrunkPaddle;
+                    gameObject.transform.localScale = _shrunkPaddle;
                     _score.UpdateScore(50);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.GrowPaddle);
                     break;
                 case 9: //Enlarge paddle
-                    gameObject.transform.localScale = EnlargedPaddle;
+                    gameObject.transform.localScale = _enlargedPaddle;
                     _score.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.ShrinkPaddle);

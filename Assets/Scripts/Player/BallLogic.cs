@@ -160,33 +160,31 @@ namespace Player
             switch (state)
             {
                 case 0:
-                    minSpeed = 500f;
-                    maxSpeed = 770f;
+                    minSpeed = 600f;
+                    maxSpeed = 1060f;
                     break;
                 case 1:
-                    minSpeed = 860f;
-                    maxSpeed = 1080f;
+                    minSpeed = 1100f;
+                    maxSpeed = 1560f;
                     break;
                 case 2:
                     minSpeed = 240f;
-                    maxSpeed = 400f;
+                    maxSpeed = 600f;
                     break;
             }
             minSpeed += levelMultiplier;
             maxSpeed += levelMultiplier;
 
-            if (state != 0)
-            {
-                //reset speed back to normal after 5 seconds.
-                yield return new WaitForSeconds(2f);
+            if (state == 0) yield break;
+            //reset speed back to normal after 5 seconds.
+            yield return new WaitForSeconds(2f);
 
-                StartCoroutine(_g.ShowPowerupExpiring(state == 1 ? PowerupComponent.PowerupCodes.FastBall : PowerupComponent.PowerupCodes.SlowBall));
-                yield return new WaitForSeconds(3f);
+            StartCoroutine(_g.ShowPowerupExpiring(state == 1 ? PowerupComponent.PowerupCodes.FastBall : PowerupComponent.PowerupCodes.SlowBall));
+            yield return new WaitForSeconds(3f);
 
-                minSpeed = 500f + levelMultiplier;
-                maxSpeed = 770f + levelMultiplier;
-                _g.RemovePowerupFromSidebar(state == 1 ? PowerupComponent.PowerupCodes.FastBall : PowerupComponent.PowerupCodes.SlowBall);
-            }
+            minSpeed = 500f + levelMultiplier;
+            maxSpeed = 770f + levelMultiplier;
+            _g.RemovePowerupFromSidebar(state == 1 ? PowerupComponent.PowerupCodes.FastBall : PowerupComponent.PowerupCodes.SlowBall);
         }
 
         /// <summary>
