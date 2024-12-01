@@ -1,24 +1,19 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-firstpass", "Assembly-CSharp-firstpass.csproj", "{CAF5F420-2404-8347-730A-010CC68B5E8A}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{d9b23a88-705d-8e05-e755-8711fbfcc4b3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{883AB2D9-5D70-058E-E755-8711FBFCC4B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-firstpass", "Assembly-CSharp-firstpass.csproj", "{20f4f5ca-0424-4783-730a-010cc68b5e8a}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CAF5F420-2404-8347-730A-010CC68B5E8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CAF5F420-2404-8347-730A-010CC68B5E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CAF5F420-2404-8347-730A-010CC68B5E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CAF5F420-2404-8347-730A-010CC68B5E8A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{883AB2D9-5D70-058E-E755-8711FBFCC4B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{883AB2D9-5D70-058E-E755-8711FBFCC4B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{883AB2D9-5D70-058E-E755-8711FBFCC4B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{883AB2D9-5D70-058E-E755-8711FBFCC4B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{d9b23a88-705d-8e05-e755-8711fbfcc4b3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{d9b23a88-705d-8e05-e755-8711fbfcc4b3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20f4f5ca-0424-4783-730a-010cc68b5e8a}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20f4f5ca-0424-4783-730a-010cc68b5e8a}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

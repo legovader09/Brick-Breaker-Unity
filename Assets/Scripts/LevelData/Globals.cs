@@ -51,6 +51,7 @@ public static class Globals
                 Debug.Log("Create ServerEndpoint");
                 // Comment out the line below to use the live servers instead of your development server
                 //client.Multiplayer.DevelopmentServer = new ServerEndpoint("localhost", 8184);
+                client.Multiplayer.UseSecureConnections = true;
                 consistentClient = client;
 
                 client.Multiplayer.CreateJoinRoom(

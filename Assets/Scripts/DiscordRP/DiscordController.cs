@@ -64,9 +64,7 @@ public class DiscordController : MonoBehaviour
             var activityManager = Globals.discord.GetActivityManager();
             activityManager.UpdateActivity(activity, (result) =>
             {
-                if (result == Discord.Result.Ok)
-                    Debug.Log("Discord Success.");
-                else
+                if (result != Discord.Result.Ok)
                     Debug.Log("Discord Failed.");
             });
         }
