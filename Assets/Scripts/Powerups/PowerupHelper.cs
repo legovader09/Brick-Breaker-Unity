@@ -35,16 +35,16 @@ namespace Powerups
             yield return new WaitForSeconds(7f);
 
             _multiplyFlash = _gui.ShowPowerupExpiring(Mathf.Approximately(multiplyVal, 2f) 
-                ? PowerupComponent.PowerupCodes.DoublePoints 
-                : PowerupComponent.PowerupCodes.HalfPoints);
+                ? PowerupCodes.DoublePoints 
+                : PowerupCodes.HalfPoints);
 
             StartCoroutine(_multiplyFlash);
 
             yield return new WaitForSeconds(3f);
 
             Globals.ScoreMultiplier = 1f;
-            _gui.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.DoublePoints);
-            _gui.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.HalfPoints);
+            _gui.RemovePowerupFromSidebar(PowerupCodes.DoublePoints);
+            _gui.RemovePowerupFromSidebar(PowerupCodes.HalfPoints);
             Destroy(gameObject);
         }
 
@@ -69,14 +69,14 @@ namespace Powerups
 
             _safetyNetFlash = GameObject.Find("EventSystem"). // show powerup expiring after 7 seconds, to give a 3 second notice.
                 GetComponent<GUIHelper>().
-                ShowPowerupExpiring(PowerupComponent.PowerupCodes.SafetyNet);
+                ShowPowerupExpiring(PowerupCodes.SafetyNet);
 
             StartCoroutine(_safetyNetFlash);
 
             yield return new WaitForSeconds(3f);
             GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(false);
             GameObject.Find("EventSystem").GetComponent<GUIHelper>().
-                RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.SafetyNet);
+                RemovePowerupFromSidebar(PowerupCodes.SafetyNet);
 
             Destroy(gameObject);
         }

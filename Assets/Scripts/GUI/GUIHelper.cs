@@ -24,21 +24,21 @@ namespace GUI
         /// <summary>
         /// Adds an active powerup's indicator from the sidebar.
         /// </summary>
-        /// <param name="p">The relevant <see cref="PowerupComponent.PowerupCodes"/> to add.</param>
-        internal void AddPowerupToSidebar(PowerupCodes p)
+        /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to add.</param>
+        internal void AddPowerupToSidebar(PowerupCodes powerup)
         {
-            if (_powerList.Contains(p)) return;
+            if (_powerList.Contains(powerup)) return;
             var ind = Instantiate(indicatorPrefab, parent.transform, false);
             ind.transform.localPosition = new(initPosition.x,
-                initPosition.y + (ind.GetComponent<RectTransform>().rect.height * _powerList.Count), initPosition.z);
-            ind.GetComponent<PowerupIndicator>().Create(p);
-            _powerList.Add(p);
+                initPosition.y + ind.GetComponent<RectTransform>().rect.height * _powerList.Count, initPosition.z);
+            ind.GetComponent<PowerupIndicator>().Create(powerup);
+            _powerList.Add(powerup);
         }
 
         /// <summary>
         /// Causes an activated powerup to "blink" repeatedly.
         /// </summary>
-        /// <param name="p">The relevant <see cref="PowerupComponent.PowerupCodes"/> to flash.</param>
+        /// <param name="p">The relevant <see cref="PowerupCodes"/> to flash.</param>
         /// <remarks>Make sure to call this function with <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"></see>.</remarks>
         internal IEnumerator ShowPowerupExpiring(PowerupCodes p)
         {
@@ -83,10 +83,10 @@ namespace GUI
         /// <summary>
         /// Removes an active powerup's indicator from the sidebar.
         /// </summary>
-        /// <param name="powerUp">The relevant <see cref="PowerupComponent.PowerupCodes"/> to remove.</param>
-        internal void RemovePowerupFromSidebar(PowerupCodes powerUp)
+        /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to remove.</param>
+        internal void RemovePowerupFromSidebar(PowerupCodes powerup)
         {
-            if (!_powerList.Contains(powerUp)) return;
+            if (!_powerList.Contains(powerup)) return;
     
             var indicators = GameObject.FindGameObjectsWithTag("Indicator");
             var indicatorRemoved = false;
@@ -95,9 +95,9 @@ namespace GUI
             {
                 var powerupIndicator = indicator.GetComponent<PowerupIndicator>();
 
-                if (powerupIndicator == null || powerupIndicator.PowerCode != powerUp) continue;
+                if (powerupIndicator == null || powerupIndicator.PowerCode != powerup) continue;
                 Destroy(indicator);
-                _powerList.Remove(powerUp);
+                _powerList.Remove(powerup);
                 indicatorRemoved = true;
                 break;
             }

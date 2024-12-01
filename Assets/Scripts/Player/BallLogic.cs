@@ -35,7 +35,7 @@ namespace Player
         private bool _canDoPhysics;
         private Vector2 _pauseVelocity;
         private Color _originalColor;
-        private GUIHelper _g;
+        private GUIHelper _guiHelper;
 
         internal bool HookedByMagnet = false;
         internal GameObject MagneticBrick;
@@ -45,7 +45,7 @@ namespace Player
         {
             //gameObject.transform.position = new Vector2(0, -398);
             initLocation = gameObject.transform.position;
-            _g = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
+            _guiHelper = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
             _originalColor = gameObject.GetComponent<SpriteShapeRenderer>().color;
             explosionCollider.GetComponent<CircleCollider2D>().enabled = false; //explosion radius collider should be off initially.
             ResetSpeed();
@@ -54,31 +54,29 @@ namespace Player
 
         void FixedUpdate()
         {
-            if (!Globals.GamePaused)
+            if (Globals.GamePaused) return;
+            if (!HookedByMagnet)
             {
-                if (!HookedByMagnet)
+                if (_canDoPhysics)
                 {
-                    if (_canDoPhysics)
-                    {
-                        currentVelocity = gameObject.GetComponent<Rigidbody2D>().velocity;
-                        if (Mathf.FloorToInt(currentVelocity.y) < 20 && Mathf.FloorToInt(currentVelocity.y) > 0) // this ensures ball is not stuck being unreachable by player.
-                            gameObject.GetComponent<Rigidbody2D>().velocity = new(currentVelocity.x, safetyYVelocity); //minimum velocity in the Y axis which is configurable.
+                    currentVelocity = gameObject.GetComponent<Rigidbody2D>().velocity;
+                    if (Mathf.FloorToInt(currentVelocity.y) < 20 && Mathf.FloorToInt(currentVelocity.y) > 0) // this ensures ball is not stuck being unreachable by player.
+                        gameObject.GetComponent<Rigidbody2D>().velocity = new(currentVelocity.x, safetyYVelocity); //minimum velocity in the Y axis which is configurable.
 
-                        if (Mathf.FloorToInt(currentVelocity.y) > -20 && Mathf.FloorToInt(currentVelocity.y) < 0) // this ensures ball is not stuck being unreachable by player.
-                            gameObject.GetComponent<Rigidbody2D>().velocity = new(currentVelocity.x, -safetyYVelocity); //minimum velocity in the (minus)Y axis which is configurable.
+                    if (Mathf.FloorToInt(currentVelocity.y) > -20 && Mathf.FloorToInt(currentVelocity.y) < 0) // this ensures ball is not stuck being unreachable by player.
+                        gameObject.GetComponent<Rigidbody2D>().velocity = new(currentVelocity.x, -safetyYVelocity); //minimum velocity in the (minus)Y axis which is configurable.
 
-                        speed = currentVelocity.magnitude; //measures ball's magnitude.
+                    speed = currentVelocity.magnitude; //measures ball's magnitude.
 
-                        // ensures ball does not exceed, or reach the lower threshold of the min and max speed limit.
-                        if (speed < minSpeed) gameObject.GetComponent<Rigidbody2D>().velocity = currentVelocity.normalized * minSpeed;
-                        if (speed > maxSpeed) gameObject.GetComponent<Rigidbody2D>().velocity = currentVelocity.normalized * maxSpeed;
-                    }
-                    currentLocation = gameObject.transform.position;
+                    // ensures ball does not exceed, or reach the lower threshold of the min and max speed limit.
+                    if (speed < minSpeed) gameObject.GetComponent<Rigidbody2D>().velocity = currentVelocity.normalized * minSpeed;
+                    if (speed > maxSpeed) gameObject.GetComponent<Rigidbody2D>().velocity = currentVelocity.normalized * maxSpeed;
                 }
-                else
-                {
-                    FixedUpdateMagnetic();
-                }
+                currentLocation = gameObject.transform.position;
+            }
+            else
+            {
+                FixedUpdateMagnetic();
             }
         }
 
@@ -87,21 +85,17 @@ namespace Player
         /// </summary>
         void FixedUpdateMagnetic()
         {
-            if (MagneticBrick != null)
-            {
-                var maxDistance = 500f + levelMultiplier;
-                var distance = Vector3.Distance(gameObject.transform.position, MagneticBrick.transform.position);
+            if (!MagneticBrick) return;
+            var maxDistance = 500f + levelMultiplier;
+            var distance = Vector3.Distance(gameObject.transform.position, MagneticBrick.transform.position);
 
-                if (distance < maxDistance) // Ball is in range of the brick.
-                {
-                    var distanceLerp = Mathf.InverseLerp(maxDistance, 0f, distance); //uses inverselerp function to measure the distance from the brick to the ball.
-                    var strength = Mathf.Lerp(0f, 500f, distanceLerp); //uses regular lerp to calculated the force strength, taking into consideration the distance lerp above.
+            if (!(distance < maxDistance)) return; // Ball is in range of the brick.
+            var distanceLerp = Mathf.InverseLerp(maxDistance, 0f, distance); //uses inverselerp function to measure the distance from the brick to the ball.
+            var strength = Mathf.Lerp(0f, 1000f, distanceLerp); //uses regular lerp to calculated the force strength, taking into consideration the distance lerp above.
 
-                    var getDirection = (MagneticBrick.transform.position - gameObject.transform.position).normalized; //normalised sets the magnetism of the ball's velocity to 1, and from this I can retrieve the general direction ofthe ball
+            var getDirection = (MagneticBrick.transform.position - gameObject.transform.position).normalized; //normalised sets the magnetism of the ball's velocity to 1, and from this I can retrieve the general direction ofthe ball
 
-                    gameObject.GetComponent<Rigidbody2D>().AddForce(getDirection * strength, ForceMode2D.Force);// apply force to the ball
-                }
-            }
+            gameObject.GetComponent<Rigidbody2D>().AddForce(getDirection * strength, ForceMode2D.Force);// apply force to the ball
         }
 
         /// <summary>
@@ -110,7 +104,7 @@ namespace Player
         /// <param name="brick">The brick that will become the magnet source.</param>
         internal void UpdateMagnetic(GameObject brick)
         {
-            _g.AddPowerupToSidebar(PowerupComponent.PowerupCodes.Magnetic);
+            _guiHelper.AddPowerupToSidebar(PowerupCodes.Magnetic);
             MagneticBrick = brick;
         }
 
@@ -179,24 +173,24 @@ namespace Player
             //reset speed back to normal after 5 seconds.
             yield return new WaitForSeconds(2f);
 
-            StartCoroutine(_g.ShowPowerupExpiring(state == 1 ? PowerupComponent.PowerupCodes.FastBall : PowerupComponent.PowerupCodes.SlowBall));
+            StartCoroutine(_guiHelper.ShowPowerupExpiring(state == 1 ? PowerupCodes.FastBall : PowerupCodes.SlowBall));
             yield return new WaitForSeconds(3f);
 
             minSpeed = 500f + levelMultiplier;
             maxSpeed = 770f + levelMultiplier;
-            _g.RemovePowerupFromSidebar(state == 1 ? PowerupComponent.PowerupCodes.FastBall : PowerupComponent.PowerupCodes.SlowBall);
+            _guiHelper.RemovePowerupFromSidebar(state == 1 ? PowerupCodes.FastBall : PowerupCodes.SlowBall);
         }
 
         /// <summary>
         /// Removes all relevant powerup indicators that occur when player loses a life.
         /// </summary>
-        internal void RemovePowerupIndicators()
+        private void RemovePowerupIndicators()
         {
-            _g.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.FastBall);
-            _g.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.SlowBall);
-            _g.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.GrowPaddle);
-            _g.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.ShrinkPaddle);
-            _g.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.Magnetic);
+            _guiHelper.RemovePowerupFromSidebar(PowerupCodes.FastBall);
+            _guiHelper.RemovePowerupFromSidebar(PowerupCodes.SlowBall);
+            _guiHelper.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
+            _guiHelper.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
+            _guiHelper.RemovePowerupFromSidebar(PowerupCodes.Magnetic);
         }
 
         /// <summary>
@@ -245,25 +239,23 @@ namespace Player
         {
             gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Hit_01");
 
-            if (collision.gameObject.CompareTag("Brick"))
+            if (!collision.gameObject.CompareTag("Brick")) return;
+            if (collision.gameObject.GetComponent<BrickComponent>().state == 0) //check state after state has been updated from brick collision
             {
-                if (collision.gameObject.GetComponent<BrickComponent>().state == 0) //check state after state has been updated from brick collision
-                {
-                    ballHitStreak++;
-                    GameObject.Find("EventSystem").GetComponent<GameTracker>().UpdateScore(10 * ballHitStreak);
-                    gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Explosion_02");
-                }
-                if (IsFireBall)
-                {
-                    explosionCollider.GetComponent<CircleCollider2D>().enabled = true;
-                    IsFireBall = false;
-                    gameObject.GetComponent<SpriteShapeRenderer>().color = _originalColor;
-                    gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Explosion_03");
-                }
-                else
-                {
-                    collision.gameObject.GetComponent<BrickComponent>().StateCheck(); //do necessary brick updates after collision.
-                }
+                ballHitStreak++;
+                GameObject.Find("EventSystem").GetComponent<GameTracker>().UpdateScore(10 * ballHitStreak);
+                GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Explosion_02");
+            }
+            if (IsFireBall)
+            {
+                explosionCollider.GetComponent<CircleCollider2D>().enabled = true;
+                IsFireBall = false;
+                GetComponent<SpriteShapeRenderer>().color = _originalColor;
+                GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Explosion_03");
+            }
+            else
+            {
+                collision.gameObject.GetComponent<BrickComponent>().StateCheck(); //do necessary brick updates after collision.
             }
         }
 
@@ -272,11 +264,10 @@ namespace Player
             if (collision.gameObject.CompareTag("Player")) //reset brick hit streak if ball comes in contact with player.
                 ballHitStreak = 0;
 
-            if (IsFake) //this forces the paddle to release the main ball upon coming into contact with the green ball. This prevents cheating, so that the player can not simply use the green ball only and not worry about lives.
-                if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Ball"))
-                    foreach (var g in GameObject.FindGameObjectsWithTag("Ball"))
-                        if (g.GetComponent<BallLogic>().stuckToPlayer)
-                            g.GetComponent<BallLogic>().stuckToPlayer = false;
+            if (!IsFake) return; //this forces the paddle to release the main ball upon coming into contact with the green ball. This prevents cheating, so that the player can not simply use the green ball only and not worry about lives.
+            if (!collision.gameObject.CompareTag("Player") && !collision.gameObject.CompareTag("Ball")) return;
+            foreach (var g in GameObject.FindGameObjectsWithTag("Ball"))
+                g.GetComponent<BallLogic>().stuckToPlayer = false;
         }
 
         /// <summary>
@@ -285,14 +276,10 @@ namespace Player
         /// <param name="state">Set to true if fireball mode on, false if not.</param>
         internal void ActivateFireBall(bool state)
         {
-            if (IsFake) //fake ball is not allowed to turn into fireball.
-                return;
+            if (IsFake) return;
 
             IsFireBall = state;
-            if (state)
-                gameObject.GetComponent<SpriteShapeRenderer>().color = Color.red; //changes colour to red.
-            else 
-                gameObject.GetComponent<SpriteShapeRenderer>().color = _originalColor; //changes colour back to original sky blue.
+            gameObject.GetComponent<SpriteShapeRenderer>().color = state ? Color.red : _originalColor;
         }
     }
 }

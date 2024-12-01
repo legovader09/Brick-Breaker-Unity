@@ -51,8 +51,8 @@ namespace Player
         internal void ResetPaddleSize()
         {
             gameObject.transform.localScale = _originalSize;
-            _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.ShrinkPaddle);
-            _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.GrowPaddle);
+            _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
+            _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
         }
 
         // Update is called once per frame
@@ -130,39 +130,39 @@ namespace Player
         /// Activates a powerup that has been picked up by the player.
         /// </summary>
         /// <param name="id">The ID of the powerup that has been collided with.</param>
-        private void ActivatePowerup(PowerupComponent.PowerupCodes id)
+        private void ActivatePowerup(PowerupCodes id)
         {
-            switch ((int)id)
+            switch (id)
             {
-                case 1:
+                case PowerupCodes.Pts50:
                     _score.UpdateScore(50);
                     break;
-                case 2:
+                case PowerupCodes.Pts100:
                     _score.UpdateScore(100);
                     break;
-                case 3:
+                case PowerupCodes.Pts250:
                     _score.UpdateScore(250);
                     break;
-                case 4:
+                case PowerupCodes.Pts500:
                     _score.UpdateScore(500);
                     break;
-                case 5: //Slow ball
+                case PowerupCodes.SlowBall:
                     var slowCall = _ball.GetComponent<BallLogic>().ChangeSpeed(2); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
                     StopCoroutine(slowCall);
                     StartCoroutine(slowCall);
                     _score.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.FastBall);
+                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.FastBall);
                     break;
-                case 6: //Fast ball
+                case PowerupCodes.FastBall:
                     var speedCall = _ball.GetComponent<BallLogic>().ChangeSpeed(1); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
                     StopCoroutine(speedCall);
                     StartCoroutine(speedCall);
                     _score.UpdateScore(40);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.SlowBall);
+                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.SlowBall);
                     break;
-                case 7: //Triple balls
+                case PowerupCodes.TripleBall:
                     for (var i = 0; i < 2; i++)
                     {
                         _hasBallAttached = false;
@@ -177,47 +177,47 @@ namespace Player
                     }
                     _score.UpdateScore(50);
                     break;
-                case 8: //Shrink paddle
+                case PowerupCodes.ShrinkPaddle:
                     gameObject.transform.localScale = _shrunkPaddle;
                     _score.UpdateScore(50);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.GrowPaddle);
+                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
                     break;
-                case 9: //Enlarge paddle
+                case PowerupCodes.GrowPaddle:
                     gameObject.transform.localScale = _enlargedPaddle;
                     _score.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.ShrinkPaddle);
+                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
                     break;
-                case 10: //Laser Beam
+                case PowerupCodes.LaserBeam:
                     StartCoroutine(FireBeams());
                     _powerupUI.AddPowerupToSidebar(id);
                     _score.UpdateScore(50);
                     break;
-                case 11: //Life Up
+                case PowerupCodes.LifeUp:
                     if (Globals.Lives < 6)
                         Globals.Lives++;
                     else
                         _score.UpdateScore(100);
                     break;
-                case 12: // Safety Net
+                case PowerupCodes.SafetyNet:
                     Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetSafetyNet();
                     _powerupUI.AddPowerupToSidebar(id);
                     _score.UpdateScore(50);
                     break;
-                case 13: // Double points
+                case PowerupCodes.DoublePoints:
                     Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetMultiplier(2f);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.HalfPoints);
+                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.HalfPoints);
                     break;
-                case 14: // Red fireball.
+                case PowerupCodes.RedFireBall:
                     _ball.GetComponent<BallLogic>().ActivateFireBall(true);
                     _score.UpdateScore(50);
                     break;
-                case 15: //Half points
+                case PowerupCodes.HalfPoints:
                     Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetMultiplier(0.5f);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.DoublePoints);
+                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.DoublePoints);
                     break;
             }
         }
@@ -226,7 +226,7 @@ namespace Player
         {
             var shootDelay = 0.3f;
             var shotsFired = 0;
-            while (shotsFired < 5) //shoot a total of 6 shots.
+            while (shotsFired < 5)
             {
                 IsFiring = true;
                 if (!Globals.GamePaused)
@@ -256,7 +256,7 @@ namespace Player
                     break;
                 }
             }
-            GameObject.Find("EventSystem").GetComponent<GUIHelper>().RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.LaserBeam);
+            GameObject.Find("EventSystem").GetComponent<GUIHelper>().RemovePowerupFromSidebar(PowerupCodes.LaserBeam);
             IsFiring = false;
         }
     }
