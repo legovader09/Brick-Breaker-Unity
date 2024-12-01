@@ -1,14 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class CollisionListener : MonoBehaviour
+namespace EventListeners
 {
-    private void OnTriggerExit2D(Collider2D collider)
+    public class CollisionListener : MonoBehaviour
     {
-        if (collider.gameObject.CompareTag("LaserBeam"))
+        private void OnTriggerExit2D(Collider2D collider)
         {
-            Destroy(collider.gameObject);
+            if (collider.gameObject.CompareTag("LaserBeam"))
+            {
+                Destroy(collider.gameObject);
+            }
         }
     }
 }

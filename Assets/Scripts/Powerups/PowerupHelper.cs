@@ -1,82 +1,84 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
+using GUI;
+using LevelData;
 using UnityEngine;
 
-public class PowerupHelper : MonoBehaviour
+namespace Powerups
 {
-    GUIHelper gui;
-    IEnumerator multiplyFlash;
-    IEnumerator safetyNetFlash;
-
-    // Start is called before the first frame update
-    internal void SetMultiplier(float MultiplyVal)
+    public class PowerupHelper : MonoBehaviour
     {
-        IEnumerator mp = setMultiplier(MultiplyVal);
-        StopCoroutine(mp);
-        StartCoroutine(mp);
-    }
+        GUIHelper _gui;
+        IEnumerator _multiplyFlash;
+        IEnumerator _safetyNetFlash;
 
-    /// <summary>
-    /// Sets the score multiplier.
-    /// </summary>
-    /// <param name="MultiplyVal">The float value to set the score multiplier by (usually 2 for double, and 0.5 for half)</param>
-    /// <returns></returns>
-    IEnumerator setMultiplier(float MultiplyVal)
-    {
-        if (multiplyFlash != null)
-            StopCoroutine(multiplyFlash);
+        // Start is called before the first frame update
+        internal void SetMultiplier(float multiplyVal)
+        {
+            IEnumerator mp = SetMultiplierEnumerator(multiplyVal);
+            StopCoroutine(mp);
+            StartCoroutine(mp);
+        }
 
-        gui = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
-        Globals.ScoreMultiplier = MultiplyVal;
+        /// <summary>
+        /// Sets the score multiplier.
+        /// </summary>
+        /// <param name="multiplyVal">The float value to set the score multiplier by (usually 2 for double, and 0.5 for half)</param>
+        /// <returns></returns>
+        IEnumerator SetMultiplierEnumerator(float multiplyVal)
+        {
+            if (_multiplyFlash != null)
+                StopCoroutine(_multiplyFlash);
 
-        yield return new WaitForSeconds(7f);
+            _gui = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
+            Globals.ScoreMultiplier = multiplyVal;
 
-        if (MultiplyVal == 2f) ///after 7 seconds show the powerup indicator flashing to show expiring.
-            multiplyFlash = gui.ShowPowerupExpiring(PowerupComponent.PowerupCodes.DoublePoints);
-        else
-            multiplyFlash = gui.ShowPowerupExpiring(PowerupComponent.PowerupCodes.HalfPoints);
+            yield return new WaitForSeconds(7f);
 
-        StartCoroutine(multiplyFlash);
+            _multiplyFlash = _gui.ShowPowerupExpiring(Mathf.Approximately(multiplyVal, 2f) 
+                ? PowerupComponent.PowerupCodes.DoublePoints 
+                : PowerupComponent.PowerupCodes.HalfPoints);
 
-        yield return new WaitForSeconds(3f);
+            StartCoroutine(_multiplyFlash);
 
-        Globals.ScoreMultiplier = 1f;
-        gui.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.DoublePoints);
-        gui.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.HalfPoints);
-        Destroy(gameObject);
-    }
+            yield return new WaitForSeconds(3f);
 
-    internal void SetSafetyNet()
-    {
-        IEnumerator sn = setSafetyNet();
-        StopCoroutine(sn);
-        StartCoroutine(sn);
-    }
+            Globals.ScoreMultiplier = 1f;
+            _gui.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.DoublePoints);
+            _gui.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.HalfPoints);
+            Destroy(gameObject);
+        }
 
-    /// <summary>
-    /// Set the safety net at the bottom of the screen, lasts 10 in game seconds.
-    /// </summary>
-    /// <returns></returns>
-    IEnumerator setSafetyNet()
-    {
-        if (safetyNetFlash != null)
-            StopCoroutine(safetyNetFlash);
+        internal void SetSafetyNet()
+        {
+            IEnumerator sn = SetSafetyNetEnumerator();
+            StopCoroutine(sn);
+            StartCoroutine(sn);
+        }
 
-        GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(true);
-        yield return new WaitForSeconds(7f);
+        /// <summary>
+        /// Set the safety net at the bottom of the screen, lasts 10 in game seconds.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator SetSafetyNetEnumerator()
+        {
+            if (_safetyNetFlash != null)
+                StopCoroutine(_safetyNetFlash);
 
-        safetyNetFlash = GameObject.Find("EventSystem"). // show powerup expiring after 7 seconds, to give a 3 second notice.
-                            GetComponent<GUIHelper>().
-                                ShowPowerupExpiring(PowerupComponent.PowerupCodes.SafetyNet);
+            GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(true);
+            yield return new WaitForSeconds(7f);
 
-        StartCoroutine(safetyNetFlash);
+            _safetyNetFlash = GameObject.Find("EventSystem"). // show powerup expiring after 7 seconds, to give a 3 second notice.
+                GetComponent<GUIHelper>().
+                ShowPowerupExpiring(PowerupComponent.PowerupCodes.SafetyNet);
 
-        yield return new WaitForSeconds(3f);
-        GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(false);
-        GameObject.Find("EventSystem").GetComponent<GUIHelper>().
-                            RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.SafetyNet);
+            StartCoroutine(_safetyNetFlash);
 
-        Destroy(gameObject);
+            yield return new WaitForSeconds(3f);
+            GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(false);
+            GameObject.Find("EventSystem").GetComponent<GUIHelper>().
+                RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.SafetyNet);
+
+            Destroy(gameObject);
+        }
     }
 }

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Assets.Scripts
+namespace Bricks
 {
     public enum BrickColours //Colour enum, the numbers correspend to the texture IDs in the resources folder.
     {

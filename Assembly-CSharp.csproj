@@ -63,6 +63,7 @@
     <Compile Include="Assets\Scripts\Player\PlayerController.cs" />
     <Compile Include="Assets\Scripts\EventListeners\PointsIndicator.cs" />
     <Compile Include="Assets\Scripts\Powerups\LaserBeamComponent.cs" />
+    <Compile Include="Assets\Scripts\GUI\LeaderboardEntryComponent.cs" />
     <Compile Include="Assets\Scripts\Powerups\PowerupIndicator.cs" />
     <Compile Include="Assets\Scripts\EventListeners\CollisionListener.cs" />
     <Compile Include="Assets\Scripts\DiscordRP\DiscordController.cs" />

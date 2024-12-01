@@ -1,6 +1,9 @@
-﻿public enum DialogResult
+﻿namespace GUI
 {
-    None = 0,
-    Confirm = 1,
-    Cancel = 2
+    public enum DialogResult
+    {
+        None = 0,
+        Confirm = 1,
+        Cancel = 2
+    }
 }

@@ -1,20 +1,21 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class PowerupIndicator : MonoBehaviour
+namespace Powerups
 {
-    internal PowerupComponent.PowerupCodes powerCode;
-
-
-    /// <summary>
-    /// Upon creation, finds and sets the sprite to the relevant powerup code.
-    /// </summary>
-    /// <param name="p">The powerup code to set the texture to.</param>
-    internal void Create(PowerupComponent.PowerupCodes p)
+    public class PowerupIndicator : MonoBehaviour
     {
-        powerCode = p;
-        gameObject.GetComponent<Image>().sprite = Resources.Load<Sprite>($"PowerupIndicators/{(int)p}-Indicator");
+        internal PowerupComponent.PowerupCodes PowerCode;
+
+
+        /// <summary>
+        /// Upon creation, finds and sets the sprite to the relevant powerup code.
+        /// </summary>
+        /// <param name="p">The powerup code to set the texture to.</param>
+        internal void Create(PowerupComponent.PowerupCodes p)
+        {
+            PowerCode = p;
+            gameObject.GetComponent<Image>().sprite = Resources.Load<Sprite>($"PowerupIndicators/{(int)p}-Indicator");
+        }
     }
 }
