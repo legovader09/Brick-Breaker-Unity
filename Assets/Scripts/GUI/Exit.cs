@@ -9,7 +9,7 @@ namespace GUI
 {
     public class Exit : MonoBehaviour
     {
-        bool _exitMode;
+        private bool _exitMode;
         public void CloseGame()
         {
             if (Globals.Score > 100 && Globals.Lives == 0)
@@ -32,7 +32,7 @@ namespace GUI
             gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/Restart");
         }
 
-        IEnumerator ShowSubmitScoreUI()
+        private IEnumerator ShowSubmitScoreUI()
         {
             var o = Instantiate(GameObject.Find("EventSystem").GetComponent<GameTracker>().scoreDialog, 
                 GameObject.Find("UICanvas").transform);

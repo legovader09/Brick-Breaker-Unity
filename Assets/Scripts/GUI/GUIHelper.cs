@@ -21,8 +21,13 @@ namespace GUI
             _soundHelper = GetComponent<SoundHelper>();
         }
 
+        private void LateUpdate()
+        {
+            MoveIndicatorsDown();
+        }
+
         /// <summary>
-        /// Adds an active powerup's indicator from the sidebar.
+        /// Adds an active powerup's indicator to the sidebar.
         /// </summary>
         /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to add.</param>
         internal void AddPowerupToSidebar(PowerupCodes powerup)
@@ -89,7 +94,6 @@ namespace GUI
             if (!_powerList.Contains(powerup)) return;
     
             var indicators = GameObject.FindGameObjectsWithTag("Indicator");
-            var indicatorRemoved = false;
     
             foreach (var indicator in indicators)
             {
@@ -98,11 +102,8 @@ namespace GUI
                 if (powerupIndicator == null || powerupIndicator.PowerCode != powerup) continue;
                 Destroy(indicator);
                 _powerList.Remove(powerup);
-                indicatorRemoved = true;
                 break;
             }
-
-            if (indicatorRemoved) MoveIndicatorsDown();
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace LevelData
         public Vector2 startingCoords = new(150, 783);
 
         // Start is called before the first frame update
-        void Awake()
+        private void Awake()
         {
             pauseText.gameObject.SetActive(false);
             continueGameButton.gameObject.SetActive(false);
@@ -40,7 +40,7 @@ namespace LevelData
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
             if (_lives != Globals.Lives)
             {
@@ -65,7 +65,7 @@ namespace LevelData
                 CheckLevelCompletion(); //only check level completion if there is a loaded level.
         }
 
-        void LateUpdate()
+        private void LateUpdate()
         {
             Globals.BricksRemaining = GameObject.FindGameObjectsWithTag("Brick").Length; //(non-priority) counts how many bricks are remaining.
         }
@@ -165,7 +165,7 @@ namespace LevelData
         /// <summary>
         /// Resets every instance of everything.
         /// </summary>
-        void DestroyAllBricksAndPowerups() 
+        private void DestroyAllBricksAndPowerups() 
         {
             var allObjects = GameObject.FindGameObjectsWithTag("Brick");
             foreach (var obj in allObjects)

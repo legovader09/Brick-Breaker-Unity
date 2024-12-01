@@ -7,9 +7,9 @@ namespace Powerups
 {
     public class PowerupHelper : MonoBehaviour
     {
-        GUIHelper _gui;
-        IEnumerator _multiplyFlash;
-        IEnumerator _safetyNetFlash;
+        private GUIHelper _gui;
+        private IEnumerator _multiplyFlash;
+        private IEnumerator _safetyNetFlash;
 
         // Start is called before the first frame update
         internal void SetMultiplier(float multiplyVal)
@@ -24,10 +24,9 @@ namespace Powerups
         /// </summary>
         /// <param name="multiplyVal">The float value to set the score multiplier by (usually 2 for double, and 0.5 for half)</param>
         /// <returns></returns>
-        IEnumerator SetMultiplierEnumerator(float multiplyVal)
+        private IEnumerator SetMultiplierEnumerator(float multiplyVal)
         {
-            if (_multiplyFlash != null)
-                StopCoroutine(_multiplyFlash);
+            if (_multiplyFlash != null) StopCoroutine(_multiplyFlash);
 
             _gui = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
             Globals.ScoreMultiplier = multiplyVal;
@@ -59,10 +58,9 @@ namespace Powerups
         /// Set the safety net at the bottom of the screen, lasts 10 in game seconds.
         /// </summary>
         /// <returns></returns>
-        IEnumerator SetSafetyNetEnumerator()
+        private IEnumerator SetSafetyNetEnumerator()
         {
-            if (_safetyNetFlash != null)
-                StopCoroutine(_safetyNetFlash);
+            if (_safetyNetFlash != null) StopCoroutine(_safetyNetFlash);
 
             GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(true);
             yield return new WaitForSeconds(7f);

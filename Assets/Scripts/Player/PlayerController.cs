@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using EventListeners;
 using GUI;
 using LevelData;
@@ -21,26 +22,33 @@ namespace Player
         private Vector3 _shrunkPaddle;
         private Vector2 _originalPosition;
         private GameObject _ball;
-        [FormerlySerializedAs("LaserBeamPrefab")] public GameObject laserBeamPrefab;
+        public GameObject laserBeamPrefab;
         public GameObject arrowAnchor;
         public GameObject powerupHelper;
-        GameTracker _score;
-        GUIHelper _powerupUI;
+        private GameTracker _score;
+        private GUIHelper _powerupUI;
         public bool cancelFire;
+        private Rigidbody2D _rigidBody;
+        private Camera _mainCamera;
+        private GameObject _eventSystem;
+        private Vector2 _mouseTargetPosition;
 
         /// <summary>Used to indicate whether the paddle is firing laser beams.</summary> 
         public bool IsFiring { get; private set; }
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
+            _eventSystem = GameObject.Find("EventSystem");
             _ball = GameObject.FindGameObjectWithTag("Ball");
-            _score = GameObject.Find("EventSystem").GetComponent<GameTracker>(); 
-            _powerupUI = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
+            _score = _eventSystem.GetComponent<GameTracker>(); 
+            _powerupUI = _eventSystem.GetComponent<GUIHelper>();
             _originalSize = gameObject.transform.localScale;
             _enlargedPaddle = new(gameObject.transform.localScale.x * 1.5f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
             _shrunkPaddle = new(gameObject.transform.localScale.x * 0.75f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
             _originalPosition = gameObject.transform.position;
+            _rigidBody = gameObject.GetComponent<Rigidbody2D>();
+            _mainCamera = Camera.main;
         }
 
         internal void ResetPaddlePosition()
@@ -55,34 +63,34 @@ namespace Player
             _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
         }
 
-        // Update is called once per frame
-        void FixedUpdate()
+        private void FixedUpdate()
         {
-            if (!Globals.GamePaused)
+            if (Globals.GamePaused)
             {
-                if (Globals.AIMode) // AI  mode is used for TESTING purposes only and can be toggled by pressing T in game.
+                _rigidBody.velocity = Vector2.zero;
+                return;
+            }
+
+            if (Globals.AIMode) 
+            {
+                if (_ball.GetComponent<BallLogic>().currentVelocity.y > 0)
                 {
-                    if (_ball.GetComponent<BallLogic>().currentVelocity.y > 0) // if ball is going upwards
-                    {
-                        var powerUp = GameObject.FindGameObjectWithTag("Powerup");
-                        _mousePos = Camera.main.ScreenToWorldPoint(powerUp ? powerUp.transform.position : //follow powerup if there is one, if not keep following ball.
-                            _ball.transform.position);
-                    }
-                    else
-                    {
-                        _mousePos = Camera.main.ScreenToWorldPoint(_ball.transform.position); //follow ball
-                    }
+                    var powerUp = GameObject.FindGameObjectWithTag("Powerup");
+                    _mouseTargetPosition = _mainCamera.ScreenToWorldPoint(
+                        powerUp ? powerUp.transform.position : _ball.transform.position);
                 }
                 else
                 {
-                    _mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition); //follow mouse if not AI Mode.
+                    _mouseTargetPosition = _mainCamera.ScreenToWorldPoint(_ball.transform.position);
                 }
-                gameObject.GetComponent<Rigidbody2D>().MovePosition(new(_mousePos.x, 0));
             }
-            else gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.zero; 
+
+            // Smoothly move towards the target position
+            var smoothedPosition = Vector2.Lerp(_rigidBody.position, _mouseTargetPosition, .8f);
+            _rigidBody.MovePosition(new(smoothedPosition.x, _rigidBody.position.y));
         }
 
-        void LateUpdate()
+        private void LateUpdate()
         {
             if (_hasBallAttached && !Globals.GamePaused)
             {
@@ -93,37 +101,40 @@ namespace Player
                     _hasBallAttached = false;
                 }
             }
+            
+            if (!Globals.GamePaused && !Globals.AIMode)
+            {
+                // Get the target position from the mouse
+                var mousePosition = Input.mousePosition;
+                var worldPoint = _mainCamera.ScreenToWorldPoint(mousePosition);
+                // Calculate the desired position of the paddle based on the mouse position
+                _mouseTargetPosition = new(worldPoint.x, 0);
+            }
 
             if (_ball.GetComponent<BallLogic>().stuckToPlayer) _hasBallAttached = true;
 
-#if UNITY_EDITOR //editor ONLY, AI mode will not work in the actual game. This mode is for testing purposes only.
+#if UNITY_EDITOR
             if (Input.GetKeyUp(KeyCode.T))
                 Globals.AIMode = !Globals.AIMode;
 #endif
-            if (Input.GetKeyUp(KeyCode.R)) //if the ball is stuck, or extremely slow, the player can press the R key on the keyboard to reset the ball, this will cost one player life.
-            {
-                _ball.GetComponent<BallLogic>().ResetBall();
-                Globals.Lives--;
-            }
+            if (!Input.GetKeyUp(KeyCode.R)) return;
+            _ball.GetComponent<BallLogic>().ResetBall();
+            Globals.Lives--;
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            if (collision.gameObject.CompareTag("Wall")) //if paddle hits map boundaries, immediately stop acceleration to prevent clipping.
-            {
-                gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            }
+            if (!collision.gameObject.CompareTag("Wall")) return; //if paddle hits map boundaries, immediately stop acceleration to prevent clipping.
+            _rigidBody.velocity = Vector2.zero;
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag("Powerup"))
-            {
-                ActivatePowerup(collision.gameObject.GetComponent<PowerupComponent>().PowerupType);
-                Destroy(collision.gameObject);
+            if (!collision.gameObject.CompareTag("Powerup")) return;
+            ActivatePowerup(collision.gameObject.GetComponent<PowerupComponent>().PowerupType);
+            Destroy(collision.gameObject);
 
-                gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Pickup_04");
-            }
+            gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Pickup_04");
         }
 
         /// <summary>
@@ -134,6 +145,7 @@ namespace Player
         {
             switch (id)
             {
+                default:
                 case PowerupCodes.Pts50:
                     _score.UpdateScore(50);
                     break;
@@ -198,7 +210,7 @@ namespace Player
                     if (Globals.Lives < 6)
                         Globals.Lives++;
                     else
-                        _score.UpdateScore(100);
+                        _score.UpdateScore(250);
                     break;
                 case PowerupCodes.SafetyNet:
                     Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetSafetyNet();
@@ -224,7 +236,7 @@ namespace Player
 
         private IEnumerator FireBeams()
         {
-            var shootDelay = 0.3f;
+            const float shootDelay = 0.3f;
             var shotsFired = 0;
             while (shotsFired < 5)
             {
@@ -256,7 +268,7 @@ namespace Player
                     break;
                 }
             }
-            GameObject.Find("EventSystem").GetComponent<GUIHelper>().RemovePowerupFromSidebar(PowerupCodes.LaserBeam);
+            _eventSystem.GetComponent<GUIHelper>().RemovePowerupFromSidebar(PowerupCodes.LaserBeam);
             IsFiring = false;
         }
     }

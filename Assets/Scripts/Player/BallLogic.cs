@@ -27,7 +27,7 @@ namespace Player
 
         public float levelMultiplier;
         internal bool IsFake = false;
-        internal bool IsFireBall;
+        private bool _isFireBall;
 
         public Vector2 initLocation;
         public Vector2 currentLocation;
@@ -41,7 +41,7 @@ namespace Player
         internal GameObject MagneticBrick;
 
         // Start is called before the first frame update
-        void Awake()
+        private void Awake()
         {
             //gameObject.transform.position = new Vector2(0, -398);
             initLocation = gameObject.transform.position;
@@ -52,7 +52,7 @@ namespace Player
         }
 
 
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             if (Globals.GamePaused) return;
             if (!HookedByMagnet)
@@ -83,7 +83,7 @@ namespace Player
         /// <summary>
         /// On every fixed update, if the ball is magnetic, the object will be pulled towards the nearest brick object.
         /// </summary>
-        void FixedUpdateMagnetic()
+        private void FixedUpdateMagnetic()
         {
             if (!MagneticBrick) return;
             var maxDistance = 500f + levelMultiplier;
@@ -91,7 +91,7 @@ namespace Player
 
             if (!(distance < maxDistance)) return; // Ball is in range of the brick.
             var distanceLerp = Mathf.InverseLerp(maxDistance, 0f, distance); //uses inverselerp function to measure the distance from the brick to the ball.
-            var strength = Mathf.Lerp(0f, 1000f, distanceLerp); //uses regular lerp to calculated the force strength, taking into consideration the distance lerp above.
+            var strength = Mathf.Lerp(0f, 20000f, distanceLerp); //uses regular lerp to calculated the force strength, taking into consideration the distance lerp above.
 
             var getDirection = (MagneticBrick.transform.position - gameObject.transform.position).normalized; //normalised sets the magnetism of the ball's velocity to 1, and from this I can retrieve the general direction ofthe ball
 
@@ -109,7 +109,7 @@ namespace Player
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
             if (!Globals.GamePaused)
             {
@@ -136,7 +136,7 @@ namespace Player
                     }
                 }
             }
-            gameObject.GetComponentInChildren<TrailRenderer>().emitting = (IsFireBall && !IsFake); //sets the fireball trail to emit, if the powerup has been picked up, and the ball is not a duplicate (green ball).
+            gameObject.GetComponentInChildren<TrailRenderer>().emitting = (_isFireBall && !IsFake); //sets the fireball trail to emit, if the powerup has been picked up, and the ball is not a duplicate (green ball).
         }
 
         internal void ResetSpeed()
@@ -246,10 +246,10 @@ namespace Player
                 GameObject.Find("EventSystem").GetComponent<GameTracker>().UpdateScore(10 * ballHitStreak);
                 GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Explosion_02");
             }
-            if (IsFireBall)
+            if (_isFireBall)
             {
                 explosionCollider.GetComponent<CircleCollider2D>().enabled = true;
-                IsFireBall = false;
+                _isFireBall = false;
                 GetComponent<SpriteShapeRenderer>().color = _originalColor;
                 GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Explosion_03");
             }
@@ -278,7 +278,7 @@ namespace Player
         {
             if (IsFake) return;
 
-            IsFireBall = state;
+            _isFireBall = state;
             gameObject.GetComponent<SpriteShapeRenderer>().color = state ? Color.red : _originalColor;
         }
     }

@@ -46,7 +46,7 @@ namespace GUI
         }
 
         // Start is called before the first frame update
-        void Start() => ToggleDialog(true);
+        private void Start() => ToggleDialog(true);
 
         /// <summary>
         /// Initialises, and displays the Dialog to the user.
@@ -75,7 +75,7 @@ namespace GUI
             gameObject.SetActive(true);
         }
 
-        void ToggleDialog(bool state) => gameObject.SetActive(state); //Toggles visibility of the dialog.
+        private void ToggleDialog(bool state) => gameObject.SetActive(state); //Toggles visibility of the dialog.
 
     }
 }

@@ -13,58 +13,54 @@ namespace Bricks
         private Vector2 _ballVel;
 
         // Start is called before the first frame update
-        void Awake()
+        private void Awake()
         {
             gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour); //when created, immediately fetch brick texture.
         }
 
-        private void OnCollisionEnter2D(Collision2D collision)
+        private void OnCollisionEnter2D(Collision2D ballCollision)
         {
-            if (collision.gameObject.CompareTag("Ball") && !Globals.GamePaused)
-            {
-                state--; //state minus on collision
-                _ballVel = collision.gameObject.GetComponent<Rigidbody2D>().velocity; // get velocity of ball on impact
-            }
+            if (!ballCollision.gameObject.CompareTag("Ball") || Globals.GamePaused) return;
+            state--; //state minus on collision
+            _ballVel = ballCollision.gameObject.GetComponent<Rigidbody2D>().velocity; // get velocity of ball on impact
         }
-        private void OnTriggerEnter2D(Collider2D collider)
+        
+        private void OnTriggerEnter2D(Collider2D laserCollider)
         {
-            if (collider.gameObject.CompareTag("LaserBeam") && !Globals.GamePaused)
-            {
-                state--;
-                Destroy(collider.gameObject); //destroy laser beam on impact.
-                StateCheck(); //set new state of the brick, i.e. set to damaged state, or destroy it if broken.
-            }
+            if (!laserCollider.gameObject.CompareTag("LaserBeam") || Globals.GamePaused) return;
+            state--;
+            Destroy(laserCollider.gameObject); //destroy laser beam on impact.
+            StateCheck(); //set new state of the brick, i.e. set to damaged state, or destroy it if broken.
         }
 
-        private void OnTriggerStay2D(Collider2D collider)
+        private void OnTriggerStay2D(Collider2D explosionCollider)
         {
-            if (collider.gameObject.name == "ExplodeRadius")
+            if (explosionCollider.gameObject.name == "ExplodeRadius")
             {
-                collider.gameObject.GetComponent<CircleCollider2D>().enabled = false; //disable explosion radius.
+                explosionCollider.gameObject.GetComponent<CircleCollider2D>().enabled = false; //disable explosion radius.
                 gameObject.AddComponent<Rigidbody2D>().AddRelativeForce(-_ballVel, ForceMode2D.Impulse); //launch the affected bricks forward to simulate an explosion.
                 gameObject.GetComponent<Rigidbody2D>().MoveRotation(180f * Time.deltaTime); //give bricks a small amount of rotation.
                 state = 1;
                 StateCheck(); //make bricks look damaged before finally destroying them.
                 StartCoroutine(Explode());
             }
-            if (GameObject.FindGameObjectsWithTag("Brick").Length <= 5 && collider.CompareTag("Ball"))
+
+            if (GameObject.FindGameObjectsWithTag("Brick").Length > 5 || !explosionCollider.CompareTag("Ball")) return;
+            explosionCollider.GetComponent<BallLogic>().HookedByMagnet = true;
+            explosionCollider.GetComponent<BallLogic>().UpdateMagnetic(gameObject); //this enables magnet mode, allows the ball to be physically attracted to the brick object.
+        }
+
+        private void OnTriggerExit2D(Collider2D ballCollider)
+        {
+            if (ballCollider.CompareTag("Ball"))
             {
-                collider.GetComponent<BallLogic>().HookedByMagnet = true;
-                collider.GetComponent<BallLogic>().UpdateMagnetic(gameObject); //this enables magnet mode, allows the ball to be physically attracted to the brick object.
+                ballCollider.GetComponent<BallLogic>().HookedByMagnet = false; //when ball exits the magnet's range, it is no longer affected by magnetism.
             }
         }
 
-        private void OnTriggerExit2D(Collider2D collider)
+        private IEnumerator Explode()
         {
-            if (collider.CompareTag("Ball"))
-            {
-                collider.GetComponent<BallLogic>().HookedByMagnet = false; //when ball exits the magnet's range, it is no longer affected by magnetism.
-            }
-        }
-
-        IEnumerator Explode()
-        {
-            yield return new WaitForSeconds((Globals.Random.Next(30, 40) / 100)); //wait for a random interval of time.
+            yield return new WaitForSeconds(Globals.Random.Next(30, 40) / 100); //wait for a random interval of time.
             state = 0;
             GameObject.Find("EventSystem").GetComponent<GameTracker>().UpdateScore(50); //add score for each exploding brick.
             StateCheck(); // Finally destroy the brick.
@@ -72,13 +68,14 @@ namespace Bricks
 
         public void StateCheck()
         {
-            if (state == 1)
+            switch (state)
             {
-                gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour + 1); //change to damaged version of the brick texture.
-            }
-            else if (state <= 0)
-            {
-                StartCoroutine(PowerupDropCheck());
+                case 1:
+                    gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour + 1); //change to damaged version of the brick texture.
+                    break;
+                case <= 0:
+                    StartCoroutine(PowerupDropCheck());
+                    break;
             }
         }
 
@@ -96,10 +93,8 @@ namespace Bricks
 
             if (chance <= Globals.ChanceToDropPowerup) //if change is within the power up chance rate.
             {
-                var tempPower = powerupPrefab;
-                Instantiate(tempPower,  // create new powerup.
-                        GameObject.FindGameObjectWithTag("MainCamera").transform, false).transform.localPosition = 
-                    new(gameObject.transform.localPosition.x, 
+                Instantiate(powerupPrefab, GameObject.FindGameObjectWithTag("MainCamera").transform, false)
+                    .transform.localPosition = new(gameObject.transform.localPosition.x, 
                         gameObject.transform.localPosition.y, 
                         gameObject.transform.localPosition.z - 1);
             }

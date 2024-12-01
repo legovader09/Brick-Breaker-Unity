@@ -14,63 +14,30 @@ namespace Powerups
         internal PowerupCodes PowerupType;
 
         // Start is called before the first frame update
-        void Awake()
+        private void Awake()
         {
-            var p = PowerupCodes.None;
-            switch (Globals.Random.NextDouble())
+            var powerupCodes = Globals.Random.NextDouble() switch
             {
-                case double n when (n <= i.Pts50):
-                    p = PowerupCodes.Pts50;
-                    break;
-                case double n when (n > i.Pts50 && n <= i.Pts100):
-                    p = PowerupCodes.Pts100;
-                    break;
-                case double n when (n > i.Pts100 && n <= i.Pts250):
-                    p = PowerupCodes.Pts250;
-                    break;
-                case double n when (n > i.Pts250 && n <= i.Pts500):
-                    p = PowerupCodes.Pts500;
-                    break;
-                case double n when (n > i.Pts500 && n <= i.SlowBall):
-                    p = PowerupCodes.SlowBall;
-                    break;
-                case double n when (n > i.SlowBall && n <= i.FastBall):
-                    p = PowerupCodes.FastBall;
-                    break;
-                case double n when (n > i.FastBall && n <= i.TripleBall):
-                    p = PowerupCodes.TripleBall;
-                    break;
-                case double n when (n > i.TripleBall && n <= i.LifeUp):
-                    p = Globals.EndlessMode ? PowerupCodes.Pts100 : PowerupCodes.LifeUp; //endless mode removes hearts powerup as this will drag out the longevity.
-                    break;
-                case double n when (n > i.LifeUp && n <= i.LaserBeam):
-                    p = PowerupCodes.LaserBeam;
-                    break;
-                case double n when (n > i.LaserBeam && n <= i.GrowPaddle):
-                    p = PowerupCodes.GrowPaddle;
-                    break;
-                case double n when (n > i.GrowPaddle && n <= i.ShrinkPaddle):
-                    p = PowerupCodes.ShrinkPaddle;
-                    break;
-                case double n when (n > i.ShrinkPaddle && n <= i.SafetyNet):
-                    p = PowerupCodes.SafetyNet;
-                    break;
-                case double n when (n > i.SafetyNet && n <= i.DoublePoints):
-                    p = PowerupCodes.DoublePoints;
-                    break;
-                case double n when (n > i.DoublePoints && n <= i.RedFireBall):
-                    p = PowerupCodes.RedFireBall;
-                    break;
-                case double n when (n > i.RedFireBall && n <= i.HalfPoints):
-                    p = PowerupCodes.HalfPoints;
-                    break;
-                default:
-                    p = PowerupCodes.Pts50;
-                    break;
-            }
+                <= i.Pts50 => PowerupCodes.Pts50,
+                <= i.Pts100 and > i.Pts50 => PowerupCodes.Pts100,
+                <= i.Pts250 and > i.Pts100 => PowerupCodes.Pts250,
+                <= i.Pts500 and > i.Pts250 => PowerupCodes.Pts500,
+                <= i.SlowBall and > i.Pts500 => PowerupCodes.SlowBall,
+                <= i.FastBall and > i.SlowBall => PowerupCodes.FastBall,
+                <= i.TripleBall and > i.FastBall => PowerupCodes.TripleBall,
+                <= i.LifeUp and > i.TripleBall => PowerupCodes.LifeUp,
+                <= i.LaserBeam and > i.LifeUp => PowerupCodes.LaserBeam,
+                <= i.GrowPaddle and > i.LaserBeam => PowerupCodes.GrowPaddle,
+                <= i.ShrinkPaddle and > i.GrowPaddle => PowerupCodes.ShrinkPaddle,
+                <= i.SafetyNet and > i.ShrinkPaddle => PowerupCodes.SafetyNet,
+                <= i.DoublePoints and > i.SafetyNet => PowerupCodes.DoublePoints,
+                <= i.RedFireBall and > i.DoublePoints => PowerupCodes.RedFireBall,
+                <= i.HalfPoints and > i.RedFireBall => PowerupCodes.HalfPoints,
+                _ => PowerupCodes.Pts50
+            };
 
-            SelectPowerupType(p);
-            Debug.Log($"Powerup Component \"{Enum.GetName(typeof(PowerupCodes), p)}\" Spawned! Powerup Code: " + PowerupType);
+            SelectPowerupType(powerupCodes);
+            Debug.Log($"Powerup Component \"{Enum.GetName(typeof(PowerupCodes), powerupCodes)}\" Spawned! Powerup Code: " + PowerupType);
         }
 
         private void SelectPowerupType(PowerupCodes powerupID)
@@ -79,13 +46,11 @@ namespace Powerups
             PowerupType = powerupID;
         }
 
-        // Update is called once per frame
-        void Update()
-        {   // on every update tick, the powerup will slowly fall down towards the player.
+        private void Update()
+        {
             gameObject.GetComponent<Rigidbody2D>().velocity = new(0, Globals.GamePaused ? 0 : fallSpeed);
         }
-
-
+        
         /// <summary>
         /// Destroy the object if it reaches out of bounds.
         /// </summary>

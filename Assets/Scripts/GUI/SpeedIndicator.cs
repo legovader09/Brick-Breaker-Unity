@@ -8,15 +8,15 @@ namespace GUI
 {
     public class SpeedIndicator : MonoBehaviour
     {
-        GameObject _ball;
+        private GameObject _ball;
 
-        void Start()
+        private void Start()
         {
             _ball = GameObject.FindGameObjectWithTag("Ball");
         }
 
         // Update is called once per frame
-        void LateUpdate()
+        private void LateUpdate()
         {
             if (!Globals.GamePaused)
             {

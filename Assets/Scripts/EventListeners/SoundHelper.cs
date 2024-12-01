@@ -3,55 +3,48 @@ using UnityEngine;
 
 namespace EventListeners
 {
+    public enum AudioType { BGM, SFX }
     public class SoundHelper : MonoBehaviour
     {
-        public enum AudioType
-        { 
-            BGM,
-            Sfx
-        }
-
-        public AudioType audioType = AudioType.Sfx;
+        private const string SFXVolumeSetting = "sfxvol";
+        private const string BGMVolumeSetting = "bgmvol";
+        public AudioType audioType = AudioType.SFX;
+        private AudioSource _audioSource;
+        private AudioListener _audioListener;
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
-            if (!PlayerPrefs.HasKey("sfxvol")) //if sfx settings don't exist in playerprefs
-                PlayerPrefs.SetFloat("sfxvol", 0.3f);
+            _audioSource = GetComponent<AudioSource>();
+            _audioListener = Camera.main?.GetComponent<AudioListener>();
+            if (!PlayerPrefs.HasKey(SFXVolumeSetting)) PlayerPrefs.SetFloat(SFXVolumeSetting, 0.3f);
+            if (!PlayerPrefs.HasKey(BGMVolumeSetting)) PlayerPrefs.SetFloat(BGMVolumeSetting, 0.3f);
 
-            if (!PlayerPrefs.HasKey("bgmvol")) //if bgm settings don't exist in playerprefs
-                PlayerPrefs.SetFloat("bgmvol", 0.3f);
-
-            if (audioType == AudioType.Sfx)
-                gameObject.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("sfxvol");
-            else
-                gameObject.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("bgmvol");
+            _audioSource.volume = PlayerPrefs.GetFloat(audioType == AudioType.SFX ? SFXVolumeSetting : BGMVolumeSetting);
         }
 
         internal void PlaySound(string sound, bool loop = false)
         {
-            if (audioType == AudioType.Sfx) //set corresponding volume levels before playing the sound.
-                gameObject.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("sfxvol");
-            else
-                gameObject.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("bgmvol");
+            _audioSource.volume = PlayerPrefs.GetFloat(audioType == AudioType.SFX ? SFXVolumeSetting : BGMVolumeSetting);
 
             if (loop)
             {
-                gameObject.GetComponent<AudioSource>().loop = loop;
-                gameObject.GetComponent<AudioSource>().clip = (AudioClip)Resources.Load(sound);
-                gameObject.GetComponent<AudioSource>().Play();
+                _audioSource.loop = true;
+                _audioSource.clip = (AudioClip)Resources.Load(sound);
+                _audioSource.Play();
             }
             else
             {
-                gameObject.GetComponent<AudioSource>().PlayOneShot((AudioClip)Resources.Load(sound));
+                _audioSource.PlayOneShot((AudioClip)Resources.Load(sound));
             }
             Debug.Log("Playing sound: " + sound);
 
-            Camera.main.GetComponent<AudioListener>().enabled = true;
+            _audioListener.enabled = true;
         }
 
-        internal void StopSound() => gameObject.GetComponent<AudioSource>().Stop();
-
-        internal void PauseSound() => Camera.main.GetComponent<AudioListener>().enabled = !Globals.GamePaused; //Pause essentially just mutes the sound until unpaused again. This only works for BGM.
+        internal void StopSound() => _audioSource.Stop();
+        
+        //Pause essentially just mutes the sound until unpaused again. This only works for BGM.
+        internal void PauseSound() => _audioListener.enabled = !Globals.GamePaused;
     }
 }

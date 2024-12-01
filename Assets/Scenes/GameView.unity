@@ -1445,7 +1445,7 @@ Camera:
   m_GameObject: {fileID: 1560732683}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 4
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -1623,7 +1623,6 @@ MonoBehaviour:
   indicatorPrefab: {fileID: 954978844699253421, guid: 9dde567de6915354e980acabb0d29233, type: 3}
   parent: {fileID: 170449702229893295}
   initPosition: {x: -776, y: -422, z: 0}
-  amountOfIndicators: 0
 --- !u!82 &1561575697
 AudioSource:
   m_ObjectHideFlags: 0

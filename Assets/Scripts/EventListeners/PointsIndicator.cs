@@ -23,7 +23,7 @@ namespace EventListeners
             Destroy(gameObject);
         }
 
-        void Update()
+        private void Update()
         {
             if (!_canMoveUp) return;
             gameObject.transform.localPosition = new Vector2(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 10f * Time.deltaTime);

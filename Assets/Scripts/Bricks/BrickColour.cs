@@ -28,40 +28,19 @@ namespace Bricks
 
         internal static BrickColours GetNextColour(BrickColours colour)
         {
-            BrickColours temp;
-            switch (colour) //due to the nature of the brick ID numbers, I could not simply iterate the colour codes, meaning a long switch case was the next best thing here.
+            var temp = colour switch
             {
-                case BrickColours.Purple:
-                    temp = BrickColours.DarkBlue;
-                    break;
-                case BrickColours.DarkBlue:
-                    temp = BrickColours.LightBlue;
-                    break;
-                case BrickColours.LightBlue:
-                    temp = BrickColours.DarkGreen;
-                    break;
-                case BrickColours.DarkGreen:
-                    temp = BrickColours.LightGreen;
-                    break;
-                case BrickColours.LightGreen:
-                    temp = BrickColours.Yellow;
-                    break;
-                case BrickColours.Yellow:
-                    temp = BrickColours.Orange;
-                    break;
-                case BrickColours.Orange:
-                    temp = BrickColours.Red;
-                    break;
-                case BrickColours.Red:
-                    temp = BrickColours.Brown;
-                    break;
-                case BrickColours.Brown:
-                    temp = BrickColours.Grey;
-                    break;
-                default:
-                    temp = (BrickColours)(new System.Random().Next(5) * 2 + 1); //get a random brick colour, the random is doubled and the + 1 is to make sure the default texture is picked, not the damaged one.
-                    break;
-            }
+                BrickColours.Purple => BrickColours.DarkBlue,
+                BrickColours.DarkBlue => BrickColours.LightBlue,
+                BrickColours.LightBlue => BrickColours.DarkGreen,
+                BrickColours.DarkGreen => BrickColours.LightGreen,
+                BrickColours.LightGreen => BrickColours.Yellow,
+                BrickColours.Yellow => BrickColours.Orange,
+                BrickColours.Orange => BrickColours.Red,
+                BrickColours.Red => BrickColours.Brown,
+                BrickColours.Brown => BrickColours.Grey,
+                _ => (BrickColours)(new System.Random().Next(5) * 2 + 1)
+            };
             return temp;
         }
     }

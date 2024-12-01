@@ -8,6 +8,8 @@ namespace GUI
 {
     public class MainMenu : MonoBehaviour
     {
+        private const string SFXVolumeSetting = "sfxvol";
+        private const string BGMVolumeSetting = "bgmvol";
         public InputField inputCustomLvl;
         public Text inputText;
         public Toggle endlessToggle;
@@ -16,7 +18,7 @@ namespace GUI
         public GameObject pnlLeaderboard;
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             gameObject.GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{Globals.Random.Next(1, 3)}", true); //play random BGM
 
@@ -29,7 +31,7 @@ namespace GUI
         }
 
         // check for ESC keypress every frame. For quitting game.
-        void Update()
+        private void Update()
         {
             if (Input.GetKey("escape"))
                 Quit();
@@ -37,13 +39,15 @@ namespace GUI
 
         public void SetVolumeSlider(Slider g)
         {
-            if (g.gameObject.name == "SFXSlider") //sets sfx volume to slider value
-                PlayerPrefs.SetFloat("sfxvol", g.value);
-
-            else if (g.gameObject.name == "BGMSlider") //sets bgm volume to slider value
+            switch (g.gameObject.name)
             {
-                PlayerPrefs.SetFloat("bgmvol", g.value);
-                gameObject.GetComponent<AudioSource>().volume = g.value; //immediately changes background music volume.
+                case "SFXSlider":
+                    PlayerPrefs.SetFloat(SFXVolumeSetting, g.value);
+                    break;
+                case "BGMSlider":
+                    PlayerPrefs.SetFloat(BGMVolumeSetting, g.value);
+                    gameObject.GetComponent<AudioSource>().volume = g.value; //immediately changes background music volume.
+                    break;
             }
         }
 
@@ -52,11 +56,9 @@ namespace GUI
         {
             menuPanel.SetActive(true);
 
-            if (menuPanel.name == "pnlSettings")
-            {
-                GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("sfxvol"); //loads sfx and bgm volumes from PlayerPrefs.
-                GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("bgmvol");
-            }
+            if (menuPanel.name != "pnlSettings") return;
+            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(SFXVolumeSetting); //loads sfx and bgm volumes from PlayerPrefs.
+            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(BGMVolumeSetting);
         }
 
         public void LoadCredit(Text text) => text.text = Resources.Load<TextAsset>("Credits").text; //Loads Credits.txt from file to display.
@@ -104,7 +106,7 @@ namespace GUI
             SceneManager.LoadScene("GameView");
         }
 
-        void Quit()
+        private void Quit()
         {
 
 #if UNITY_STANDALONE

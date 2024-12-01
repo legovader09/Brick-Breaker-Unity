@@ -7,7 +7,6 @@ namespace Powerups
     {
         internal PowerupCodes PowerCode;
 
-
         /// <summary>
         /// Upon creation, finds and sets the sprite to the relevant powerup code.
         /// </summary>
