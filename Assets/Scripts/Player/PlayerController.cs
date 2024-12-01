@@ -64,7 +64,7 @@ namespace Player
                 {
                     if (_ball.GetComponent<BallLogic>().currentVelocity.y > 0) // if ball is going upwards
                     {
-                        GameObject powerUp = GameObject.FindGameObjectWithTag("Powerup");
+                        var powerUp = GameObject.FindGameObjectWithTag("Powerup");
                         _mousePos = Camera.main.ScreenToWorldPoint(powerUp ? powerUp.transform.position : //follow powerup if there is one, if not keep following ball.
                             _ball.transform.position);
                     }
@@ -147,7 +147,7 @@ namespace Player
                     _score.UpdateScore(500);
                     break;
                 case 5: //Slow ball
-                    IEnumerator slowCall = _ball.GetComponent<BallLogic>().ChangeSpeed(2); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
+                    var slowCall = _ball.GetComponent<BallLogic>().ChangeSpeed(2); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
                     StopCoroutine(slowCall);
                     StartCoroutine(slowCall);
                     _score.UpdateScore(20);
@@ -155,7 +155,7 @@ namespace Player
                     _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.FastBall);
                     break;
                 case 6: //Fast ball
-                    IEnumerator speedCall = _ball.GetComponent<BallLogic>().ChangeSpeed(1); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
+                    var speedCall = _ball.GetComponent<BallLogic>().ChangeSpeed(1); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
                     StopCoroutine(speedCall);
                     StartCoroutine(speedCall);
                     _score.UpdateScore(40);
@@ -163,14 +163,14 @@ namespace Player
                     _powerupUI.RemovePowerupFromSidebar(PowerupComponent.PowerupCodes.SlowBall);
                     break;
                 case 7: //Triple balls
-                    for (int i = 0; i < 2; i++)
+                    for (var i = 0; i < 2; i++)
                     {
                         _hasBallAttached = false;
-                        GameObject temp = Instantiate(_ball, _ball.transform.parent, false);
+                        var temp = Instantiate(_ball, _ball.transform.parent, false);
                         temp.GetComponent<BallLogic>().IsFake = true;
                         temp.GetComponent<SpriteShapeRenderer>().color = Color.green;
-                        GameObject[] balls = GameObject.FindGameObjectsWithTag("Ball");
-                        foreach (GameObject b in balls)
+                        var balls = GameObject.FindGameObjectsWithTag("Ball");
+                        foreach (var b in balls)
                         {
                             b.GetComponent<BallLogic>().stuckToPlayer = false;
                         }
@@ -224,8 +224,8 @@ namespace Player
 
         private IEnumerator FireBeams()
         {
-            float shootDelay = 0.3f;
-            int shotsFired = 0;
+            var shootDelay = 0.3f;
+            var shotsFired = 0;
             while (shotsFired < 5) //shoot a total of 6 shots.
             {
                 IsFiring = true;

@@ -50,7 +50,7 @@ namespace Powerups
 
         internal void SetSafetyNet()
         {
-            IEnumerator sn = SetSafetyNetEnumerator();
+            var sn = SetSafetyNetEnumerator();
             StopCoroutine(sn);
             StartCoroutine(sn);
         }

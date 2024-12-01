@@ -34,9 +34,9 @@ namespace GUI
 
         IEnumerator ShowSubmitScoreUI()
         {
-            GameObject o = Instantiate(GameObject.Find("EventSystem").GetComponent<GameTracker>().scoreDialog, 
+            var o = Instantiate(GameObject.Find("EventSystem").GetComponent<GameTracker>().scoreDialog, 
                 GameObject.Find("UICanvas").transform);
-            Dialog d = o.GetComponent<Dialog>();
+            var d = o.GetComponent<Dialog>();
             d.CreateDialog(
                 "Submit Highscore",
                 $"Would you like to submit your highscore of {Globals.Score}?" +
@@ -45,7 +45,7 @@ namespace GUI
             while (d.DialogResult == DialogResult.None)
                 yield return null; //yield return null allows the coroutine to jump to this line on every call, so while dialog result is none, it will be stuck to returning here.
 
-            bool hasPressedConfirm = false;
+            var hasPressedConfirm = false;
 
             if (d.DialogResult == DialogResult.Confirm)
             { 

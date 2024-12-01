@@ -21,7 +21,7 @@ namespace Bricks
         public static Sprite GetBrickColour(BrickColours colour)
         {
             var tempCol = (int)colour;
-            string colourCode = $"{(tempCol < 10 ? "0" : "")}"; //simple check to see if ID is below 10, if so add 0 at the front of a string.
+            var colourCode = $"{(tempCol < 10 ? "0" : "")}"; //simple check to see if ID is below 10, if so add 0 at the front of a string.
             colourCode += tempCol;
             return Resources.Load<Sprite>($"Bricks/{colourCode}-Breakout-Tiles");
         }

@@ -89,15 +89,15 @@ namespace Player
         {
             if (MagneticBrick != null)
             {
-                float maxDistance = 500f + levelMultiplier;
-                float distance = Vector3.Distance(gameObject.transform.position, MagneticBrick.transform.position);
+                var maxDistance = 500f + levelMultiplier;
+                var distance = Vector3.Distance(gameObject.transform.position, MagneticBrick.transform.position);
 
                 if (distance < maxDistance) // Ball is in range of the brick.
                 {
-                    float distanceLerp = Mathf.InverseLerp(maxDistance, 0f, distance); //uses inverselerp function to measure the distance from the brick to the ball.
-                    float strength = Mathf.Lerp(0f, 500f, distanceLerp); //uses regular lerp to calculated the force strength, taking into consideration the distance lerp above.
+                    var distanceLerp = Mathf.InverseLerp(maxDistance, 0f, distance); //uses inverselerp function to measure the distance from the brick to the ball.
+                    var strength = Mathf.Lerp(0f, 500f, distanceLerp); //uses regular lerp to calculated the force strength, taking into consideration the distance lerp above.
 
-                    Vector3 getDirection = (MagneticBrick.transform.position - gameObject.transform.position).normalized; //normalised sets the magnetism of the ball's velocity to 1, and from this I can retrieve the general direction ofthe ball
+                    var getDirection = (MagneticBrick.transform.position - gameObject.transform.position).normalized; //normalised sets the magnetism of the ball's velocity to 1, and from this I can retrieve the general direction ofthe ball
 
                     gameObject.GetComponent<Rigidbody2D>().AddForce(getDirection * strength, ForceMode2D.Force);// apply force to the ball
                 }
@@ -131,7 +131,7 @@ namespace Player
                     gameObject.GetComponent<FixedJoint2D>().enabled = false;
                     if (!_canDoPhysics)
                     {
-                        int random = Globals.Random.Next(0, 2); //50% chance to go left, or right.
+                        var random = Globals.Random.Next(0, 2); //50% chance to go left, or right.
                         if (random == 0) 
                             gameObject.GetComponent<Rigidbody2D>().velocity = ballVelocity; 
                         else 
@@ -274,7 +274,7 @@ namespace Player
 
             if (IsFake) //this forces the paddle to release the main ball upon coming into contact with the green ball. This prevents cheating, so that the player can not simply use the green ball only and not worry about lives.
                 if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Ball"))
-                    foreach (GameObject g in GameObject.FindGameObjectsWithTag("Ball"))
+                    foreach (var g in GameObject.FindGameObjectsWithTag("Ball"))
                         if (g.GetComponent<BallLogic>().stuckToPlayer)
                             g.GetComponent<BallLogic>().stuckToPlayer = false;
         }

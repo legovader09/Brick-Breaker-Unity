@@ -16,7 +16,7 @@ namespace Powerups
         // Start is called before the first frame update
         void Awake()
         {
-            PowerupCodes p = PowerupCodes.None;
+            var p = PowerupCodes.None;
             switch (Globals.Random.NextDouble())
             {
                 case double n when (n <= i.Pts50):

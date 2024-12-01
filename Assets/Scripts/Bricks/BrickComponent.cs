@@ -84,10 +84,10 @@ namespace Bricks
 
         private IEnumerator PowerupDropCheck()
         {
-            int chance = Globals.Random.Next(0, 100); //random change for powerup to appear.
+            var chance = Globals.Random.Next(0, 100); //random change for powerup to appear.
 
             gameObject.GetComponent<BoxCollider2D>().isTrigger = true; //trigger allows ball object to go through the brick while the breaking animation plays.
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             { // this halves the brick's scale every 0.1 in game seconds, to show a breaking effect, for 3 iterations.
                 gameObject.transform.localScale = new(transform.localScale.x / 2, transform.localScale.y / 2, transform.localScale.z);
                 yield return new WaitForSeconds(0.1f);
@@ -96,7 +96,7 @@ namespace Bricks
 
             if (chance <= Globals.ChanceToDropPowerup) //if change is within the power up chance rate.
             {
-                GameObject tempPower = powerupPrefab;
+                var tempPower = powerupPrefab;
                 Instantiate(tempPower,  // create new powerup.
                         GameObject.FindGameObjectWithTag("MainCamera").transform, false).transform.localPosition = 
                     new(gameObject.transform.localPosition.x, 

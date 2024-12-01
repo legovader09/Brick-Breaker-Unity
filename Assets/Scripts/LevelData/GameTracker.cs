@@ -25,7 +25,7 @@ namespace LevelData
         public GameObject safetyNet;
         public GameObject scoreDialog;
 
-        private int _liveTracker;
+        private int _lives;
         private bool _levelLoaded;
 
         public int currentWave;
@@ -42,15 +42,15 @@ namespace LevelData
         // Update is called once per frame
         void Update()
         {
-            if (_liveTracker != Globals.Lives)
+            if (_lives != Globals.Lives)
             {
-                _liveTracker = Globals.Lives;
+                _lives = Globals.Lives;
 
-                GameObject[] lives = GameObject.FindGameObjectsWithTag("Lives");
-                foreach (GameObject g in lives)
-                    g.GetComponent<SpriteRenderer>().size = new(_liveTracker * 2.54f, 2.54f); //update heart UI.
+                var lives = GameObject.FindGameObjectsWithTag("Lives");
+                foreach (var g in lives)
+                    g.GetComponent<SpriteRenderer>().size = new(_lives * 2.54f, 2.54f); //update heart UI.
 
-                if (_liveTracker == 0)
+                if (_lives == 0)
                     GameOver();
             }
 
@@ -72,47 +72,41 @@ namespace LevelData
 
         public void PauseGame()
         {
-            if (GameObject.FindGameObjectsWithTag("Brick").Length > 0 && Globals.Lives != 0) //only allow pausing when it's not game over, and the level is not complete, otherwise the UI will overlap.
-            {
-                Globals.GamePaused = !Globals.GamePaused;
-                Time.timeScale = Globals.GamePaused ? 0f : 1f; //setting the time scale to 0 completely halts every physics simulation that is happening.
-                pauseText.gameObject.SetActive(Globals.GamePaused);
-                continueGameButton.gameObject.SetActive(Globals.GamePaused);
-                GameObject[] allBalls = GameObject.FindGameObjectsWithTag("Ball");
-                foreach (GameObject o in allBalls)
-                {
-                    o.gameObject.GetComponent<BallLogic>().PauseBall(); //pause every ball instance, including the green copies.
-                }
-                gameObject.GetComponent<SoundHelper>().PauseSound();
-
-                if (GameObject.Find("pnlSettings") != null)
-                    GameObject.Find("pnlSettings").SetActive(false);
-            }
+            if (GameObject.FindGameObjectsWithTag("Brick").Length <= 0 || Globals.Lives == 0) return; //only allow pausing when it's not game over, and the level is not complete, otherwise the UI will overlap.
+            Globals.GamePaused = !Globals.GamePaused;
+            Time.timeScale = Globals.GamePaused ? 0f : 1f; //setting the time scale to 0 completely halts every physics simulation that is happening.
+            pauseText.gameObject.SetActive(Globals.GamePaused);
+            continueGameButton.gameObject.SetActive(Globals.GamePaused);
+            gameObject.GetComponent<SoundHelper>().PauseSound();
+            GameObject.Find("pnlSettings")?.SetActive(false);
         }
 
         private void CheckLevelCompletion()
         {
-            GameObject[] allObjects = GameObject.FindGameObjectsWithTag("Brick");
-            if (allObjects.Length == 0) // all bricks destroyed, level is complete.
+            var bricksRemaining = GameObject.FindGameObjectsWithTag("Brick");
+            switch (bricksRemaining.Length)
             {
-                if (!Globals.GamePaused)
+                case 0:
                 {
-                    gameObject.GetComponent<SoundHelper>().StopSound(); //stop main bgm before playing victory sound.
-                    gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/LevelComplete");
+                    if (!Globals.GamePaused)
+                    {
+                        gameObject.GetComponent<SoundHelper>().StopSound(); //stop main bgm before playing victory sound.
+                        gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/LevelComplete");
+                    }
+                    Globals.GamePaused = true;
+                    var allBalls = GameObject.FindGameObjectsWithTag("Ball");
+                    foreach (var o in allBalls)
+                    {
+                        o.gameObject.GetComponent<BallLogic>().PauseBall();
+                    }
+                    levelCompleteTxt.gameObject.SetActive(true);
+                    nextLvlButton.gameObject.SetActive(true);
+                    break;
                 }
-                Globals.GamePaused = true;
-                GameObject[] allBalls = GameObject.FindGameObjectsWithTag("Ball");
-                foreach (GameObject o in allBalls)
-                {
-                    o.gameObject.GetComponent<BallLogic>().PauseBall();
-                }
-                levelCompleteTxt.gameObject.SetActive(true);
-                nextLvlButton.gameObject.SetActive(true);
-            }
-            else if (allObjects.Length > 0)
-            {
-                levelCompleteTxt.gameObject.SetActive(false);
-                nextLvlButton.gameObject.SetActive(false);
+                case > 0:
+                    levelCompleteTxt.gameObject.SetActive(false);
+                    nextLvlButton.gameObject.SetActive(false);
+                    break;
             }
         }
 
@@ -126,9 +120,9 @@ namespace LevelData
         
             LoadNextWave();
 
-            PlayerController p = GameObject.FindGameObjectWithTag("Player").gameObject.GetComponent<PlayerController>();
-            p.ResetPaddlePosition();
-            p.cancelFire = p.IsFiring; // cancel laser beams.
+            var player = GameObject.FindGameObjectWithTag("Player").gameObject.GetComponent<PlayerController>();
+            player.ResetPaddlePosition();
+            player.cancelFire = player.IsFiring; // cancel laser beams.
             GameObject.FindGameObjectWithTag("Ball").gameObject.GetComponent<BallLogic>().ResetBall();
             Globals.GamePaused = false;
             pauseText.gameObject.GetComponent<Animator>().StartPlayback();
@@ -146,8 +140,8 @@ namespace LevelData
         /// </summary>
         private void MakeAllRemainingBricksFall()
         {
-            GameObject[] allObjects = GameObject.FindGameObjectsWithTag("Brick");
-            foreach (GameObject obj in allObjects) 
+            var allObjects = GameObject.FindGameObjectsWithTag("Brick");
+            foreach (var obj in allObjects) 
             {
                 obj.AddComponent<Rigidbody2D>().gravityScale = Globals.Random.Next(3, 10);
                 obj.GetComponent<Rigidbody2D>().AddForceAtPosition(new(100, 100), Vector2.zero);
@@ -161,9 +155,9 @@ namespace LevelData
             gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/GameOver");
             MakeAllRemainingBricksFall();
             Globals.GamePaused = true;
-            pauseText.gameObject.SetActive(Globals.GamePaused);
-            pauseText.gameObject.GetComponent<Animator>().StopPlayback();
-            pauseText.gameObject.GetComponent<Text>().text = "GAME OVER";
+            pauseText.SetActive(Globals.GamePaused);
+            pauseText.GetComponent<Animator>().StopPlayback();
+            pauseText.GetComponent<Text>().text = "GAME OVER";
             continueGameButton.gameObject.SetActive(false);
             Globals.EndlessMode = Globals.StartWithEndless;
         }
@@ -184,7 +178,7 @@ namespace LevelData
                 Destroy(obj);
             }
             allObjects = GameObject.FindGameObjectsWithTag("LaserBeam");
-            foreach (GameObject obj in allObjects)
+            foreach (var obj in allObjects)
             {
                 Destroy(obj);
             }
