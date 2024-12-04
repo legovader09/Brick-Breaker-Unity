@@ -16,7 +16,7 @@ namespace GUI
         public Dialog dialogPrefab;
         public GameSessionData sessionData;
         public GameObject pnlLeaderboard;
-
+        
         // Start is called before the first frame update
         private void Start()
         {
@@ -33,6 +33,7 @@ namespace GUI
             sessionData.Initialize(success =>
             {
                 GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{sessionData.Random.Next(1, 3)}", true); //play random BGM
+                sessionData.ResetData(); 
                 if (success) return;
                 sessionData.ErrorMessage = "Unable to connect to game servers.";
                 SceneManager.LoadScene("MainMenu");
@@ -108,9 +109,7 @@ namespace GUI
         public void LaunchCustomLevelGUI()
         {
             if (!inputText.text.Contains("1")) return;
-            sessionData.GamePaused = false;
-            sessionData.lives = 3;
-            sessionData.Score = 0;
+            sessionData.ResetData();
             sessionData.CustomLevelData = inputText.text;
             sessionData.customLevel = true;
             SceneManager.LoadScene("GameView");
@@ -118,10 +117,7 @@ namespace GUI
 
         public void StartGame()
         {
-            sessionData.GamePaused = false;
-            sessionData.lives = 3;
-            sessionData.Score = 0;
-            sessionData.customLevel = false;
+            sessionData.ResetData();
             sessionData.endlessMode = endlessToggle.isOn;
             sessionData.startWithEndless = endlessToggle.isOn;
             SceneManager.LoadScene("GameView");

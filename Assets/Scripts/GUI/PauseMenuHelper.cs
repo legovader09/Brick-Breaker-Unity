@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Constants;
+﻿using Constants;
 using EventListeners;
 using LevelData;
 using UnityEngine;

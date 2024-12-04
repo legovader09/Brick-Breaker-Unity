@@ -26,7 +26,7 @@ namespace Player
         public Vector2 currentVelocity;
         public Vector2 initLocation;
         public Vector2 currentLocation;
-        public float safetyYVelocity = 30f;
+        public float safetyYVelocity = 35f;
         public float speed;
         public int ballHitStreak;
         public float magnetStrength = 1500f;
@@ -71,6 +71,7 @@ namespace Player
             {
                 if (_canDoPhysics)
                 {
+                    // TODO: Add feature to fast forward if ball hasn't hit anything in 5 seconds.
                     currentVelocity = _rigidBody.linearVelocity;
                     if (Mathf.FloorToInt(currentVelocity.y) < 20 && Mathf.FloorToInt(currentVelocity.y) > 0) // this ensures ball is not stuck being unreachable by player.
                         _rigidBody.linearVelocity = new(currentVelocity.x, safetyYVelocity); //minimum velocity in the Y axis which is configurable.

@@ -32,6 +32,20 @@ namespace LevelData
         internal bool GamePaused;
         internal int BricksRemaining;
 
+        internal void ResetData()
+        {
+            CurrentLevel = 0;
+            BricksRemaining = 0;
+            Score = 0;
+            lives = 3;
+            GamePaused = false;
+            AIMode = false;
+            ErrorMessage = "";
+            customLevel = false;
+            startWithEndless = false;
+            endlessMode = false;
+        }
+
         public void Initialize(Action<bool> callback)
         {
             Connection = new();
