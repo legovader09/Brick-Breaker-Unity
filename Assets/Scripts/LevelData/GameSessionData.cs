@@ -7,8 +7,6 @@ namespace LevelData
     [Serializable, CreateAssetMenu(fileName = "Game Session Data", menuName = "Game Session Data")]
     public class GameSessionData : ScriptableObject
     {
-        [Range(1, 99)]
-        public int amountOfLevels = 7;
         [Range(1, 100)]
         public int chanceToDropPowerup = 40;
         [Range(100, 9999)] 

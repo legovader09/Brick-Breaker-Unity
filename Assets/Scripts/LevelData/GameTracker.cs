@@ -84,15 +84,6 @@ namespace LevelData
         {
             if (!sessionData.customLevel)
             {
-                if (sessionData.endlessMode) //generate new endless level
-                {
-                    sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
-                }
-                else if (sessionData.CurrentLevel >= sessionData.amountOfLevels) //start endless mode after completing the main levels.
-                {
-                    sessionData.endlessMode = true;
-                    sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
-                }
                 sessionData.CurrentLevel++;
                 if (sessionData.lives < 6) sessionData.lives++; else UpdateScore(100); //add a life on every level completion, if player already has 6 lives, then give 100 points instead.
                 ball.GetComponent<BallLogic>().levelMultiplier = GetComponent<GameTracker>().sessionData.CurrentLevel * 30f; //level speed increase by the level number * a constant of 30.
@@ -235,13 +226,25 @@ namespace LevelData
             }
             else if (sessionData.endlessMode)
             {
+                sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
                 levelStruct = sessionData.EndlessLevelData;
                 lvlIndicatorTxt.text = $"Endless {sessionData.CurrentLevel}";
             }
             else
             {
-                levelStruct = Resources.Load<TextAsset>($"Levels/level{sessionData.CurrentLevel}").text;
-                lvlIndicatorTxt.text = $"Level {sessionData.CurrentLevel}";
+                var data = Resources.Load<TextAsset>($"Levels/level{sessionData.CurrentLevel}");
+                if (!data)
+                {
+                    sessionData.endlessMode = true;
+                    sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
+                    levelStruct = sessionData.EndlessLevelData;
+                    lvlIndicatorTxt.text = $"Endless {sessionData.CurrentLevel}";
+                }
+                else
+                {
+                    levelStruct = data.text;
+                    lvlIndicatorTxt.text = $"Level {sessionData.CurrentLevel}";
+                }
             }
             
             var currentCoords = startingCoords;

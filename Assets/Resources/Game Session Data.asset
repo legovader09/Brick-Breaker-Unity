@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fc8ee5ae978427ba4f8d2b572993ac0, type: 3}
   m_Name: Game Session Data
   m_EditorClassIdentifier: 
-  amountOfLevels: 7
+  amountOfLevels: 9
   chanceToDropPowerup: 40
   ballSpeed: 200
   lives: 3
