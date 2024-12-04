@@ -1,11 +1,11 @@
-﻿using Bricks;
+﻿using System.Text.RegularExpressions;
+using Bricks;
 using DiscordRP;
 using Enums;
 using EventListeners;
 using GUI;
 using Player;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace LevelData
@@ -249,7 +249,7 @@ namespace LevelData
             var height = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.y;
             var tempBrick = brickPrefab;
             tempBrick.GetComponent<BrickComponent>().colour = BrickColours.Purple;
-            foreach (var c in levelStruct)
+            foreach (var c in Regex.Replace(levelStruct, @"\n|\s+", "").ToCharArray())
             {
                 switch (c)
                 { //this will read the text file containing level data, and lay out the bricks according to the specification below:

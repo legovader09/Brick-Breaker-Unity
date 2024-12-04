@@ -173,8 +173,8 @@ namespace Player
                     _currentMaxSpeed = maxSpeed;
                     break;
                 case 1:
-                    _currentMinSpeed = minSpeed + 100f;
-                    _currentMaxSpeed = maxSpeed + 100f;
+                    _currentMinSpeed = minSpeed + 150f;
+                    _currentMaxSpeed = maxSpeed + 150f;
                     break;
                 case 2:
                     _currentMinSpeed = minSpeed - 200f;
@@ -183,6 +183,7 @@ namespace Player
             }
             _currentMinSpeed += levelMultiplier;
             _currentMaxSpeed += levelMultiplier;
+            speed = maxSpeed;
         }
 
         /// <summary>
