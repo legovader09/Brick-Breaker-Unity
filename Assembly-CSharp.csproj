@@ -65,9 +65,9 @@
     <Compile Include="Assets\Scripts\Constants\ConfigConstants.cs" />
     <Compile Include="Assets\Scripts\Enums\BrickColours.cs" />
     <Compile Include="Assets\Scripts\Enums\AudioTypes.cs" />
-    <Compile Include="Assets\Scripts\Constants\ItemSpawnChance.cs" />
     <Compile Include="Assets\Scripts\Powerups\PowerupComponent.cs" />
     <Compile Include="Assets\Scripts\GUI\DialogResult.cs" />
+    <Compile Include="Assets\Scripts\Powerups\PowerupSpawnWeights.cs" />
     <Compile Include="Assets\Scripts\Networking\PlayerIOConnection.cs" />
     <Compile Include="Assets\Scripts\Bricks\BrickComponent.cs" />
     <Compile Include="Assets\Scripts\GUI\Dialog.cs" />

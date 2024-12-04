@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Constants;
 using Enums;
 using LevelData;
@@ -19,28 +21,27 @@ namespace Powerups
         // Start is called before the first frame update
         private void Awake()
         {
-            var powerupCode = sessionData.Random.NextDouble() switch
-            {
-                <= ItemSpawnChance.Pts50 => PowerupCodes.Pts50,
-                <= ItemSpawnChance.Pts100 and > ItemSpawnChance.Pts50 => PowerupCodes.Pts100,
-                <= ItemSpawnChance.Pts250 and > ItemSpawnChance.Pts100 => PowerupCodes.Pts250,
-                <= ItemSpawnChance.Pts500 and > ItemSpawnChance.Pts250 => PowerupCodes.Pts500,
-                <= ItemSpawnChance.SlowBall and > ItemSpawnChance.Pts500 => PowerupCodes.SlowBall,
-                <= ItemSpawnChance.FastBall and > ItemSpawnChance.SlowBall => PowerupCodes.FastBall,
-                <= ItemSpawnChance.TripleBall and > ItemSpawnChance.FastBall => PowerupCodes.TripleBall,
-                <= ItemSpawnChance.LifeUp and > ItemSpawnChance.TripleBall => PowerupCodes.LifeUp,
-                <= ItemSpawnChance.LaserBeam and > ItemSpawnChance.LifeUp => PowerupCodes.LaserBeam,
-                <= ItemSpawnChance.GrowPaddle and > ItemSpawnChance.LaserBeam => PowerupCodes.GrowPaddle,
-                <= ItemSpawnChance.ShrinkPaddle and > ItemSpawnChance.GrowPaddle => PowerupCodes.ShrinkPaddle,
-                <= ItemSpawnChance.SafetyNet and > ItemSpawnChance.ShrinkPaddle => PowerupCodes.SafetyNet,
-                <= ItemSpawnChance.DoublePoints and > ItemSpawnChance.SafetyNet => PowerupCodes.DoublePoints,
-                <= ItemSpawnChance.RedFireBall and > ItemSpawnChance.DoublePoints => PowerupCodes.RedFireBall,
-                <= ItemSpawnChance.HalfPoints and > ItemSpawnChance.RedFireBall => PowerupCodes.HalfPoints,
-                _ => PowerupCodes.Pts50
-            };
-
-            SelectPowerupType(PowerupCodes.SafetyNet);
+            var powerupCode = GetRandomWeightedPowerup();
+            SelectPowerupType(powerupCode);
             Debug.Log($"Powerup Component \"{Enum.GetName(typeof(PowerupCodes), powerupCode)}\" Spawned! Powerup Code: " + PowerupType);
+        }
+        
+        private PowerupCodes GetRandomWeightedPowerup()
+        {
+            var totalWeight = PowerupSpawnWeights.PowerupWeights.Values.Sum();
+            var randomValue = sessionData.Random.NextDouble() * totalWeight;
+
+            var cumulativeWeight = 0.0;
+            foreach (var pair in PowerupSpawnWeights.PowerupWeights)
+            {
+                cumulativeWeight += pair.Value;
+                if (randomValue < cumulativeWeight)
+                {
+                    return pair.Key;
+                }
+            }
+
+            return PowerupSpawnWeights.PowerupWeights.Keys.Last();
         }
 
         private void SelectPowerupType(PowerupCodes powerupID)

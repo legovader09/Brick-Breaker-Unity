@@ -93,7 +93,11 @@ namespace Player
         {
             if (_hasBallAttached && !sessionData.GamePaused)
             {
-                if ((Input.GetMouseButtonDown(0) && Input.mousePosition.y < 850) || sessionData.AIMode)
+                const float topBarHeightPercentage = 0.08f;
+                var topBarHeight = Screen.height * topBarHeightPercentage;
+                var maxClickableY = Screen.height - topBarHeight;
+
+                if ((Input.GetMouseButtonDown(0) && Input.mousePosition.y < maxClickableY) || sessionData.AIMode)
                 {
                     var ball = _ball.GetComponent<BallLogic>();
                     ball.stuckToPlayer = false;
