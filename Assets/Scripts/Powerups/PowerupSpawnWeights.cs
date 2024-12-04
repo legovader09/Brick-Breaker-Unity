@@ -9,13 +9,13 @@ namespace Powerups
         public static readonly Dictionary<PowerupCodes, double> PowerupWeights = new()
         {
             { PowerupCodes.Pts50, 0.2 },
-            { PowerupCodes.Pts100, 0.04 },
-            { PowerupCodes.Pts250, 0.03 },
-            { PowerupCodes.Pts500, 0.025 },
+            { PowerupCodes.Pts100, 0.045 },
+            { PowerupCodes.Pts250, 0.04 },
+            { PowerupCodes.Pts500, 0.035 },
             { PowerupCodes.SlowBall, 0.05 },
             { PowerupCodes.FastBall, 0.075 },
             { PowerupCodes.TripleBall, 0.10 },
-            { PowerupCodes.LifeUp, 0.02 },
+            { PowerupCodes.LifeUp, 0.03 },
             { PowerupCodes.LaserBeam, 0.10 },
             { PowerupCodes.GrowPaddle, 0.10 },
             { PowerupCodes.ShrinkPaddle, 0.10 },
