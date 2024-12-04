@@ -1,5 +1,5 @@
 ﻿
-namespace Powerups
+namespace Constants
 {
     /// <summary>
     /// This class defines the spawn chances for items. Read-only properties.

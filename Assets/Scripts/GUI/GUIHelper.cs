@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Enums;
 using EventListeners;
 using Powerups;
 using UnityEngine;
@@ -13,7 +15,7 @@ namespace GUI
         public GameObject indicatorPrefab;
         public GameObject parent;
         public Vector3 initPosition;
-        private readonly List<PowerupCodes> _powerList = new();
+        private readonly List<PowerupListItem> _powerList = new();
         private SoundHelper _soundHelper;
 
         private void Start()
@@ -32,45 +34,34 @@ namespace GUI
         /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to add.</param>
         internal void AddPowerupToSidebar(PowerupCodes powerup)
         {
-            if (_powerList.Contains(powerup)) return;
-            var ind = Instantiate(indicatorPrefab, parent.transform, false);
-            ind.transform.localPosition = new(initPosition.x,
-                initPosition.y + ind.GetComponent<RectTransform>().rect.height * _powerList.Count, initPosition.z);
-            ind.GetComponent<PowerupIndicator>().Create(powerup);
-            _powerList.Add(powerup);
+            if (_powerList.Any(item => item.PowerupCode == powerup)) return;
+            var indicator = Instantiate(indicatorPrefab, parent.transform, false);
+            indicator.transform.localPosition = new(initPosition.x,
+                initPosition.y + indicator.GetComponent<RectTransform>().rect.height * _powerList.Count, initPosition.z);
+            indicator.GetComponent<PowerupIndicator>().Create(powerup);
+            _powerList.Add(new() { PowerupCode = powerup, PowerupPrefab = indicator });
         }
 
         /// <summary>
         /// Causes an activated powerup to "blink" repeatedly.
         /// </summary>
-        /// <param name="p">The relevant <see cref="PowerupCodes"/> to flash.</param>
+        /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to flash.</param>
         /// <remarks>Make sure to call this function with <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"></see>.</remarks>
-        internal IEnumerator ShowPowerupExpiring(PowerupCodes p)
+        internal IEnumerator ShowPowerupExpiring(PowerupCodes powerup)
         {
-            if (!_powerList.Contains(p))
-                yield break;
+            if (_powerList.All(item => item.PowerupCode != powerup)) yield break;
 
-            var indicators = GameObject.FindGameObjectsWithTag("Indicator");
-    
-            foreach (var indicator in indicators)
+            var indicator = _powerList.First(item => item.PowerupCode == powerup).PowerupPrefab;
+            var image = indicator.GetComponent<Image>();
+
+            const int blinkCount = 12;
+            const float halfBlinkDuration = 0.25f;
+
+            for (var i = 0; i < blinkCount; i++)
             {
-                var powerupIndicator = indicator.GetComponent<PowerupIndicator>();
-
-                if (powerupIndicator == null || powerupIndicator.PowerCode != p) continue;
-                var image = indicator.GetComponent<Image>();
-
-                // Blink the indicator 6 times, i.e., for 3 seconds in total
-                const int blinkCount = 12;
-                const float halfBlinkDuration = 0.25f;
-
-                for (var i = 0; i < blinkCount; i++)
-                {
-                    // alternate between 0.5 and 1 opacity
-                    SetImageOpacity(image, i % 2 == 0 ? 0.5f : 1f);
-                    _soundHelper.PlaySound("Sound/SFX/zipclick");
-                    yield return new WaitForSeconds(halfBlinkDuration);
-                }
-                break; // Exit loop after processing the found indicator
+                SetImageOpacity(image, i % 2 == 0 ? 0.5f : 1f);
+                _soundHelper.PlaySound("Sound/SFX/zipclick");
+                yield return new WaitForSeconds(halfBlinkDuration);
             }
         }
 
@@ -81,7 +72,7 @@ namespace GUI
         /// <param name="opacity">The desired opacity level.</param>
         private void SetImageOpacity(Image image, float opacity)
         {
-            if (image == null) return;
+            if (!image) return;
             image.color = new(1f, 1f, 1f, opacity);
         }
 
@@ -91,35 +82,23 @@ namespace GUI
         /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to remove.</param>
         internal void RemovePowerupFromSidebar(PowerupCodes powerup)
         {
-            if (!_powerList.Contains(powerup)) return;
-    
-            var indicators = GameObject.FindGameObjectsWithTag("Indicator");
-    
-            foreach (var indicator in indicators)
-            {
-                var powerupIndicator = indicator.GetComponent<PowerupIndicator>();
-
-                if (powerupIndicator == null || powerupIndicator.PowerCode != powerup) continue;
-                Destroy(indicator);
-                _powerList.Remove(powerup);
-                break;
-            }
+            if (_powerList.All(item => item.PowerupCode != powerup)) return;
+            var matchPowerup = _powerList.First(item => item.PowerupCode == powerup);
+            Destroy(matchPowerup.PowerupPrefab);
+            _powerList.Remove(matchPowerup);
         }
+        
+        internal bool CheckIfPowerupExists(PowerupCodes powerup) => _powerList.Any(item => item.PowerupCode == powerup);
 
         /// <summary>
         /// Removes all active powerup indicators from the sidebar.
         /// </summary>
         internal void RemoveAllPowerups()
         {
-            var powerupIndicators = GameObject.FindGameObjectsWithTag("Indicator");
-    
-            foreach (var indicator in powerupIndicators)
+            foreach (var indicator in _powerList.ToList())
             {
-                var powerupIndicatorComponent = indicator.GetComponent<PowerupIndicator>();
-
-                if (!powerupIndicatorComponent || !_powerList.Contains(powerupIndicatorComponent.PowerCode)) continue;
-                _powerList.Remove(powerupIndicatorComponent.PowerCode);
-                Destroy(indicator);
+                Destroy(indicator.PowerupPrefab);
+                _powerList.Remove(indicator);
             }
         }
 

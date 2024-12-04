@@ -1,4 +1,5 @@
-﻿using EventListeners;
+﻿using Constants;
+using EventListeners;
 using LevelData;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,8 +9,6 @@ namespace GUI
 {
     public class MainMenu : MonoBehaviour
     {
-        private const string SFXVolumeSetting = "sfxvol";
-        private const string BGMVolumeSetting = "bgmvol";
         public InputField inputCustomLvl;
         public Text inputText;
         public Toggle endlessToggle;
@@ -20,7 +19,7 @@ namespace GUI
         // Start is called before the first frame update
         private void Start()
         {
-            gameObject.GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{Globals.Random.Next(1, 3)}", true); //play random BGM
+            GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{Globals.Random.Next(1, 3)}", true); //play random BGM
 
             // add quit function
 #if UNITY_STANDALONE
@@ -42,10 +41,10 @@ namespace GUI
             switch (g.gameObject.name)
             {
                 case "SFXSlider":
-                    PlayerPrefs.SetFloat(SFXVolumeSetting, g.value);
+                    PlayerPrefs.SetFloat(ConfigConstants.SFXVolumeSetting, g.value);
                     break;
                 case "BGMSlider":
-                    PlayerPrefs.SetFloat(BGMVolumeSetting, g.value);
+                    PlayerPrefs.SetFloat(ConfigConstants.BGMVolumeSetting, g.value);
                     gameObject.GetComponent<AudioSource>().volume = g.value; //immediately changes background music volume.
                     break;
             }
@@ -57,8 +56,8 @@ namespace GUI
             menuPanel.SetActive(true);
 
             if (menuPanel.name != "pnlSettings") return;
-            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(SFXVolumeSetting); //loads sfx and bgm volumes from PlayerPrefs.
-            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(BGMVolumeSetting);
+            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.SFXVolumeSetting); //loads sfx and bgm volumes from PlayerPrefs.
+            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.BGMVolumeSetting);
         }
 
         public void LoadCredit(Text text) => text.text = Resources.Load<TextAsset>("Credits").text; //Loads Credits.txt from file to display.
@@ -84,15 +83,13 @@ namespace GUI
 
         public void LaunchCustomLevelGUI()
         {
-            if (inputText.text.Contains("1"))
-            {
-                Globals.GamePaused = false;
-                Globals.Lives = 3;
-                Globals.Score = 0;
-                Globals.CustomLevelData = inputText.text;
-                Globals.CustomLevel = true;
-                SceneManager.LoadScene("GameView");
-            }
+            if (!inputText.text.Contains("1")) return;
+            Globals.GamePaused = false;
+            Globals.Lives = 3;
+            Globals.Score = 0;
+            Globals.CustomLevelData = inputText.text;
+            Globals.CustomLevel = true;
+            SceneManager.LoadScene("GameView");
         }
 
         public void StartGame()
@@ -108,7 +105,6 @@ namespace GUI
 
         private void Quit()
         {
-
 #if UNITY_STANDALONE
         try //this stops discord from displaying the "Playing Game" status, it is however in a try statement in case of failure (due to discord not being available)
         {
@@ -116,14 +112,10 @@ namespace GUI
             var activityManager = Globals.Discord.GetActivityManager();
             activityManager.ClearActivity((result) =>
             {
-                if (result == Discord.Result.Ok)
-                    Debug.Log("Discord Success.");
-                else
-                    Debug.Log("Discord Failed.");
+                Debug.Log(result == Discord.Result.Ok ? "Discord Success." : "Discord Failed.");
             });
         }
-        catch { }
-
+        catch { /* ignored */ }
         Application.Quit();
 #endif
         }

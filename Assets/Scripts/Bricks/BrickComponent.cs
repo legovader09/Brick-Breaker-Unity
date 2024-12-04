@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Enums;
 using LevelData;
 using Player;
 using UnityEngine;
@@ -11,11 +12,13 @@ namespace Bricks
         public int state = 2; //2 is full brick, 1 is damaged brick, 0 is broken.
         public GameObject powerupPrefab;
         private Vector2 _ballVel;
+        private Camera _mainCamera;
 
         // Start is called before the first frame update
         private void Awake()
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour); //when created, immediately fetch brick texture.
+            _mainCamera = Camera.main;
+            gameObject.GetComponent<SpriteRenderer>().sprite = BrickColourHelper.GetBrickColour(colour); //when created, immediately fetch brick texture.
         }
 
         private void OnCollisionEnter2D(Collision2D ballCollision)
@@ -71,7 +74,7 @@ namespace Bricks
             switch (state)
             {
                 case 1:
-                    gameObject.GetComponent<SpriteRenderer>().sprite = BrickColour.GetBrickColour(colour + 1); //change to damaged version of the brick texture.
+                    gameObject.GetComponent<SpriteRenderer>().sprite = BrickColourHelper.GetBrickColour(colour + 1); //change to damaged version of the brick texture.
                     break;
                 case <= 0:
                     StartCoroutine(PowerupDropCheck());
@@ -93,7 +96,7 @@ namespace Bricks
 
             if (chance <= Globals.ChanceToDropPowerup) //if change is within the power up chance rate.
             {
-                Instantiate(powerupPrefab, GameObject.FindGameObjectWithTag("MainCamera").transform, false)
+                Instantiate(powerupPrefab, _mainCamera.transform, false)
                     .transform.localPosition = new(gameObject.transform.localPosition.x, 
                         gameObject.transform.localPosition.y, 
                         gameObject.transform.localPosition.z - 1);

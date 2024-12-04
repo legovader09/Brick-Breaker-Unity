@@ -1,4 +1,4 @@
-﻿namespace Powerups
+﻿namespace Enums
 {
     public enum PowerupCodes
     {

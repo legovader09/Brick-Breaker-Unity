@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Enums;
 using GUI;
 using LevelData;
 using UnityEngine;

@@ -1,9 +1,11 @@
 ﻿using Bricks;
 using DiscordRP;
+using Enums;
 using EventListeners;
 using GUI;
 using Player;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace LevelData
@@ -24,12 +26,13 @@ namespace LevelData
         public GameObject indicator;
         public GameObject safetyNet;
         public GameObject scoreDialog;
+        public GameObject player;
+        public GameObject ball;
+        public int currentLevel;
+        public Vector2 startingCoords = new(150, 783);
 
         private int _lives;
         private bool _levelLoaded;
-
-        public int currentWave;
-        public Vector2 startingCoords = new(150, 783);
 
         // Start is called before the first frame update
         private void Awake()
@@ -81,6 +84,31 @@ namespace LevelData
             GameObject.Find("pnlSettings")?.SetActive(false);
         }
 
+        public void LoadNextLevel()
+        {
+            if (!Globals.CustomLevel)
+            {
+                if (Globals.EndlessMode) //generate new endless level
+                {
+                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
+                }
+                else if (currentLevel >= Globals.AmountOfLevels) //start endless mode after completing the main levels.
+                {
+                    Globals.EndlessMode = true;
+                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
+                }
+                currentLevel++;
+                if (Globals.Lives < 6) Globals.Lives++; else UpdateScore(100); //add a life on every level completion, if player already has 6 lives, then give 100 points instead.
+                ball.GetComponent<BallLogic>().levelMultiplier = GetComponent<GameTracker>().currentLevel * 30f; //level speed increase by the level number * a constant of 30.
+                ball.GetComponent<BallLogic>().ResetSpeed(); //reset speed if speed multiplier is active.
+            }
+
+            LoadNextWave();
+            player.GetComponent<PlayerController>().ResetPaddlePosition();
+            ball.GetComponent<BallLogic>().ResetBall();
+            Globals.GamePaused = false;
+        }
+
         private void CheckLevelCompletion()
         {
             var bricksRemaining = GameObject.FindGameObjectsWithTag("Brick");
@@ -115,15 +143,15 @@ namespace LevelData
             Globals.Lives = 3;
             Globals.Score = 0;
             scoreText.GetComponent<Text>().text = $"Score: {Globals.Score}";
-            if (!Globals.CustomLevel) currentWave = 1; //if custom level, reset current wave (level) also.
+            if (!Globals.CustomLevel) currentLevel = 1; //if custom level, reset current wave (level) also.
             if (Globals.EndlessMode) Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
         
             LoadNextWave();
 
-            var player = GameObject.FindGameObjectWithTag("Player").gameObject.GetComponent<PlayerController>();
-            player.ResetPaddlePosition();
-            player.cancelFire = player.IsFiring; // cancel laser beams.
-            GameObject.FindGameObjectWithTag("Ball").gameObject.GetComponent<BallLogic>().ResetBall();
+            var playerController = player.GetComponent<PlayerController>();
+            playerController.ResetPaddlePosition();
+            playerController.cancelFire = playerController.IsFiring; // cancel laser beams.
+            ball.GetComponent<BallLogic>().ResetBall();
             Globals.GamePaused = false;
             pauseText.gameObject.GetComponent<Animator>().StartPlayback();
             pauseText.gameObject.SetActive(Globals.GamePaused);
@@ -221,12 +249,12 @@ namespace LevelData
             else if (Globals.EndlessMode)
             {
                 levelStruct = Globals.EndlessLevelData;
-                lvlIndicatorTxt.text = $"Endless {currentWave}";
+                lvlIndicatorTxt.text = $"Endless {currentLevel}";
             }
             else
             {
-                levelStruct = Resources.Load<TextAsset>($"Levels/level{currentWave}").text;
-                lvlIndicatorTxt.text = $"Level {currentWave}";
+                levelStruct = Resources.Load<TextAsset>($"Levels/level{currentLevel}").text;
+                lvlIndicatorTxt.text = $"Level {currentLevel}";
             }
             foreach (var c in levelStruct)
             {
@@ -241,7 +269,7 @@ namespace LevelData
                         break;
                     case ',': //new row.
                         tempBrick.GetComponent<BrickComponent>().colour = 
-                            BrickColour.GetNextColour(tempBrick.GetComponent<BrickComponent>().colour);
+                            BrickColourHelper.GetNextColour(tempBrick.GetComponent<BrickComponent>().colour);
                         currentCoords = new(startingCoords.x, (int)(currentCoords.y - height));
                         break;
                 }
@@ -254,37 +282,10 @@ namespace LevelData
         {
             if (Globals.GamePaused) return;
             scoreToAdd = Mathf.FloorToInt(scoreToAdd * Globals.ScoreMultiplier);
-            Instantiate(indicator, 
-                    GameObject.FindGameObjectWithTag("Player").transform).
-                GetComponent<PointsIndicator>().ShowPoints(scoreToAdd);
+            Instantiate(indicator, player.transform).GetComponent<PointsIndicator>().ShowPoints(scoreToAdd);
 
             Globals.Score += scoreToAdd;
             scoreText.GetComponent<Text>().text = $"Score: {Globals.Score}";
         }
-
-#region "Settings menu UI"
-        public void SetVolumeSlider(Slider g)
-        {
-            switch (g.gameObject.name)
-            {
-                case "SFXSlider":
-                    PlayerPrefs.SetFloat("sfxvol", g.value);
-                    break;
-                case "BGMSlider":
-                    PlayerPrefs.SetFloat("bgmvol", g.value);
-                    gameObject.GetComponent<AudioSource>().volume = g.value;
-                    break;
-            }
-        }
-        public void HideUIMenu(GameObject menuPanel) => menuPanel.SetActive(false);
-        public void ShowUIMenu(GameObject menuPanel)
-        {
-            menuPanel.SetActive(true);
-
-            if (menuPanel.name != "pnlSettings") return;
-            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("sfxvol");
-            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("bgmvol");
-        }
-#endregion
     }
 }

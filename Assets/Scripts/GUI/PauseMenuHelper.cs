@@ -1,13 +1,14 @@
 ﻿using System.Collections;
+using Constants;
 using EventListeners;
 using LevelData;
-using Player;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace GUI
 {
-    public class Exit : MonoBehaviour
+    public class PauseMenuHelper : MonoBehaviour
     {
         private bool _exitMode;
         public void CloseGame()
@@ -18,18 +19,6 @@ namespace GUI
                 StartCoroutine(ShowSubmitScoreUI());
             }
             else SceneManager.LoadScene("MainMenu");
-
-        }
-
-        public void Restart()
-        {
-            if (Globals.Score > 100)
-            {
-                _exitMode = false;
-                StartCoroutine(ShowSubmitScoreUI());
-            }
-            else GameObject.Find("EventSystem").GetComponent<GameTracker>().RestartGame();
-            gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/Restart");
         }
 
         private IEnumerator ShowSubmitScoreUI()
@@ -49,11 +38,12 @@ namespace GUI
 
             if (d.DialogResult == DialogResult.Confirm)
             { 
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 if (!hasPressedConfirm)
                 {
                     hasPressedConfirm = true; //this ensures you cannot spam click the confirm button and cause glitches when uploading highscore.
                     StartCoroutine(o.GetComponent<HighscoreController>().PostHighscore(d.ResultText.text, Globals.Score,
-                        GetComponent<GameTracker>().currentWave)); //post score to database.
+                        GetComponent<GameTracker>().currentLevel)); //post score to database.
 
                     while (o.GetComponent<HighscoreController>().PostSuccess == null)
                         yield return null;
@@ -76,29 +66,41 @@ namespace GUI
             Destroy(o);
         }
 
-        public void LoadNextLevel()
+        public void Restart()
         {
-            if (!Globals.CustomLevel)
+            if (Globals.Score > 100)
             {
-                if (Globals.EndlessMode) //generate new endless level
-                {
-                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
-                }
-                else if (GetComponent<GameTracker>().currentWave >= Globals.AmountOfLevels) //start endless mode after completing the main levels.
-                {
-                    Globals.EndlessMode = true;
-                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
-                }
-                GetComponent<GameTracker>().currentWave++;
-                if (Globals.Lives < 6) Globals.Lives++; else GetComponent<GameTracker>().UpdateScore(100); //add a life on every level completion, if player already has 6 lives, then give 100 points instead.
-                GameObject.FindGameObjectWithTag("Ball").GetComponent<BallLogic>().levelMultiplier = GetComponent<GameTracker>().currentWave * 30f; //level speed increase by the level number * a constant of 30.
-                GameObject.FindGameObjectWithTag("Ball").GetComponent<BallLogic>().ResetSpeed(); //reset speed if speed multiplier is active.
+                _exitMode = false;
+                StartCoroutine(ShowSubmitScoreUI());
             }
-
-            GetComponent<GameTracker>().LoadNextWave();
-            GameObject.FindGameObjectWithTag("Player").gameObject.GetComponent<PlayerController>().ResetPaddlePosition();
-            GameObject.FindGameObjectWithTag("Ball").gameObject.GetComponent<BallLogic>().ResetBall();
-            Globals.GamePaused = false;
+            else GetComponent<GameTracker>().RestartGame();
+            gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/Restart");
         }
+        
+        #region "Settings menu UI"
+        public void SetVolumeSlider(Slider g)
+        {
+            switch (g.gameObject.name)
+            {
+                case "SFXSlider":
+                    PlayerPrefs.SetFloat(ConfigConstants.SFXVolumeSetting, g.value);
+                    break;
+                case "BGMSlider":
+                    PlayerPrefs.SetFloat(ConfigConstants.BGMVolumeSetting, g.value);
+                    gameObject.GetComponent<AudioSource>().volume = g.value;
+                    break;
+            }
+        }
+
+        public void HideUIMenu(GameObject menuPanel) => menuPanel.SetActive(false);
+        public void ShowUIMenu(GameObject menuPanel)
+        {
+            menuPanel.SetActive(true);
+
+            if (menuPanel.name != "pnlSettings") return;
+            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.SFXVolumeSetting);
+            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.BGMVolumeSetting);
+        }
+        #endregion
     }
 }

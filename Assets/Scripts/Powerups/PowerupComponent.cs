@@ -1,43 +1,45 @@
 ﻿using System;
+using Constants;
+using Enums;
 using LevelData;
 using UnityEngine;
-using i = Powerups.ItemSpawnChance;
 
 namespace Powerups
 {
     /// <summary>
     /// This component handles a spawned powerup's data.
     /// </summary>
-    public partial class PowerupComponent : MonoBehaviour
+    public class PowerupComponent : MonoBehaviour
     {
+        public bool IsActivated { get; set; }
         public float fallSpeed;
         internal PowerupCodes PowerupType;
 
         // Start is called before the first frame update
         private void Awake()
         {
-            var powerupCodes = Globals.Random.NextDouble() switch
+            var powerupCode = Globals.Random.NextDouble() switch
             {
-                <= i.Pts50 => PowerupCodes.Pts50,
-                <= i.Pts100 and > i.Pts50 => PowerupCodes.Pts100,
-                <= i.Pts250 and > i.Pts100 => PowerupCodes.Pts250,
-                <= i.Pts500 and > i.Pts250 => PowerupCodes.Pts500,
-                <= i.SlowBall and > i.Pts500 => PowerupCodes.SlowBall,
-                <= i.FastBall and > i.SlowBall => PowerupCodes.FastBall,
-                <= i.TripleBall and > i.FastBall => PowerupCodes.TripleBall,
-                <= i.LifeUp and > i.TripleBall => PowerupCodes.LifeUp,
-                <= i.LaserBeam and > i.LifeUp => PowerupCodes.LaserBeam,
-                <= i.GrowPaddle and > i.LaserBeam => PowerupCodes.GrowPaddle,
-                <= i.ShrinkPaddle and > i.GrowPaddle => PowerupCodes.ShrinkPaddle,
-                <= i.SafetyNet and > i.ShrinkPaddle => PowerupCodes.SafetyNet,
-                <= i.DoublePoints and > i.SafetyNet => PowerupCodes.DoublePoints,
-                <= i.RedFireBall and > i.DoublePoints => PowerupCodes.RedFireBall,
-                <= i.HalfPoints and > i.RedFireBall => PowerupCodes.HalfPoints,
+                <= ItemSpawnChance.Pts50 => PowerupCodes.Pts50,
+                <= ItemSpawnChance.Pts100 and > ItemSpawnChance.Pts50 => PowerupCodes.Pts100,
+                <= ItemSpawnChance.Pts250 and > ItemSpawnChance.Pts100 => PowerupCodes.Pts250,
+                <= ItemSpawnChance.Pts500 and > ItemSpawnChance.Pts250 => PowerupCodes.Pts500,
+                <= ItemSpawnChance.SlowBall and > ItemSpawnChance.Pts500 => PowerupCodes.SlowBall,
+                <= ItemSpawnChance.FastBall and > ItemSpawnChance.SlowBall => PowerupCodes.FastBall,
+                <= ItemSpawnChance.TripleBall and > ItemSpawnChance.FastBall => PowerupCodes.TripleBall,
+                <= ItemSpawnChance.LifeUp and > ItemSpawnChance.TripleBall => PowerupCodes.LifeUp,
+                <= ItemSpawnChance.LaserBeam and > ItemSpawnChance.LifeUp => PowerupCodes.LaserBeam,
+                <= ItemSpawnChance.GrowPaddle and > ItemSpawnChance.LaserBeam => PowerupCodes.GrowPaddle,
+                <= ItemSpawnChance.ShrinkPaddle and > ItemSpawnChance.GrowPaddle => PowerupCodes.ShrinkPaddle,
+                <= ItemSpawnChance.SafetyNet and > ItemSpawnChance.ShrinkPaddle => PowerupCodes.SafetyNet,
+                <= ItemSpawnChance.DoublePoints and > ItemSpawnChance.SafetyNet => PowerupCodes.DoublePoints,
+                <= ItemSpawnChance.RedFireBall and > ItemSpawnChance.DoublePoints => PowerupCodes.RedFireBall,
+                <= ItemSpawnChance.HalfPoints and > ItemSpawnChance.RedFireBall => PowerupCodes.HalfPoints,
                 _ => PowerupCodes.Pts50
             };
 
-            SelectPowerupType(powerupCodes);
-            Debug.Log($"Powerup Component \"{Enum.GetName(typeof(PowerupCodes), powerupCodes)}\" Spawned! Powerup Code: " + PowerupType);
+            SelectPowerupType(powerupCode);
+            Debug.Log($"Powerup Component \"{Enum.GetName(typeof(PowerupCodes), powerupCode)}\" Spawned! Powerup Code: " + PowerupType);
         }
 
         private void SelectPowerupType(PowerupCodes powerupID)

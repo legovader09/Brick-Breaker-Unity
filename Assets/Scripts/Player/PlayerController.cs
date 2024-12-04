@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Enums;
 using EventListeners;
 using GUI;
 using LevelData;
@@ -15,19 +16,16 @@ namespace Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
+        public GameObject laserBeamPrefab;
+        public GameObject powerupHelper;
+        public GameObject paddleBase;
+        public bool cancelFire;
         private Vector2 _mousePos;
         private bool _hasBallAttached = true;
-        private Vector3 _originalSize;
-        private Vector3 _enlargedPaddle;
-        private Vector3 _shrunkPaddle;
         private Vector2 _originalPosition;
         private GameObject _ball;
-        public GameObject laserBeamPrefab;
-        public GameObject arrowAnchor;
-        public GameObject powerupHelper;
         private GameTracker _score;
         private GUIHelper _powerupUI;
-        public bool cancelFire;
         private Rigidbody2D _rigidBody;
         private Camera _mainCamera;
         private GameObject _eventSystem;
@@ -43,9 +41,6 @@ namespace Player
             _ball = GameObject.FindGameObjectWithTag("Ball");
             _score = _eventSystem.GetComponent<GameTracker>(); 
             _powerupUI = _eventSystem.GetComponent<GUIHelper>();
-            _originalSize = gameObject.transform.localScale;
-            _enlargedPaddle = new(gameObject.transform.localScale.x * 1.5f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
-            _shrunkPaddle = new(gameObject.transform.localScale.x * 0.75f, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
             _originalPosition = gameObject.transform.position;
             _rigidBody = gameObject.GetComponent<Rigidbody2D>();
             _mainCamera = Camera.main;
@@ -58,7 +53,7 @@ namespace Player
 
         internal void ResetPaddleSize()
         {
-            gameObject.transform.localScale = _originalSize;
+            paddleBase.GetComponent<PaddleSynchronizer>().SetPaddleSize(1);
             _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
             _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
         }
@@ -130,9 +125,14 @@ namespace Player
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (!collision.gameObject.CompareTag("Powerup")) return;
-            ActivatePowerup(collision.gameObject.GetComponent<PowerupComponent>().PowerupType);
-            Destroy(collision.gameObject);
+            var component = collision.gameObject;
+            if (!component.CompareTag("Powerup")) return;
+            var powerup = collision.gameObject.GetComponent<PowerupComponent>();
+            if (powerup == null || powerup.IsActivated) return;
+            powerup.IsActivated = true;
+            
+            ActivatePowerup(powerup.PowerupType);
+            Destroy(component);
 
             gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Pickup_04");
         }
@@ -175,28 +175,36 @@ namespace Player
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.SlowBall);
                     break;
                 case PowerupCodes.TripleBall:
-                    for (var i = 0; i < 2; i++)
+                    _hasBallAttached = false;
+                    _score.UpdateScore(50);
+                    var ballCollection = GameObject.FindGameObjectsWithTag("Ball");
+                    if (ballCollection.Length > 15)
                     {
-                        _hasBallAttached = false;
-                        var temp = Instantiate(_ball, _ball.transform.parent, false);
-                        temp.GetComponent<BallLogic>().IsFake = true;
-                        temp.GetComponent<SpriteShapeRenderer>().color = Color.green;
-                        var balls = GameObject.FindGameObjectsWithTag("Ball");
-                        foreach (var b in balls)
+                        // reward the player for somehow juggling 15 balls.
+                        _score.UpdateScore(1000);
+                    }
+                    else
+                    {
+                        foreach (var ball in ballCollection)
                         {
-                            b.GetComponent<BallLogic>().stuckToPlayer = false;
+                            for (var i = 0; i < 2; i++)
+                            {
+                                var instance = Instantiate(ball, ball.transform.parent, false);
+                                instance.GetComponent<BallLogic>().IsFake = true;
+                                instance.GetComponent<SpriteShapeRenderer>().color = ball.GetComponent<BallLogic>().IsFake ? Color.yellow : Color.green;
+                                instance.GetComponent<BallLogic>().stuckToPlayer = false;
+                            }
                         }
                     }
-                    _score.UpdateScore(50);
                     break;
                 case PowerupCodes.ShrinkPaddle:
-                    gameObject.transform.localScale = _shrunkPaddle;
+                    paddleBase.GetComponent<PaddleSynchronizer>().ModifyPaddleSize(.80f);
                     _score.UpdateScore(50);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
                     break;
                 case PowerupCodes.GrowPaddle:
-                    gameObject.transform.localScale = _enlargedPaddle;
+                    paddleBase.GetComponent<PaddleSynchronizer>().ModifyPaddleSize(1.2f);
                     _score.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);

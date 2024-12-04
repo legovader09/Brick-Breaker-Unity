@@ -1,5 +1,4 @@
-﻿using PlayerIOClient;
-using UnityEngine;
+﻿using Networking;
 
 namespace LevelData
 {
@@ -24,59 +23,6 @@ namespace LevelData
         public static bool AIMode { get; set; }
         public static Discord.Discord Discord { get; set; }
         public static int BricksRemaining { get; set; }
-        public static Client ConsistentClient { get; private set; }
-        private static Connection Conn { get; set; }
-
-
-        public static bool ConnectToPlayerIO(string name = "guest")
-        {
-            if (ConsistentClient != null)
-            {
-                Conn.Disconnect();
-                Conn = null;
-                ConsistentClient = null;
-            }
-
-            PlayerIO.UseSecureApiRequests = true;
-            PlayerIO.Authenticate(
-                "brick-breaker-jeffkfgevk6eg5yp5m3jsq",
-                "public",
-                new()
-                {
-                    { "userId", name },
-                },
-                null,
-                delegate (Client client)
-                {
-                    Debug.Log("Successfully connected to Player.IO");
-
-                    Debug.Log("Create ServerEndpoint");
-                    // Comment out the line below to use the live servers instead of your development server
-                    //client.Multiplayer.DevelopmentServer = new ServerEndpoint("localhost", 8184);
-                    client.Multiplayer.UseSecureConnections = true;
-                    ConsistentClient = client;
-
-                    client.Multiplayer.CreateJoinRoom(
-                        null,
-                        "Brick",
-                        true,
-                        null,
-                        null,
-                        delegate (Connection connection) {
-                            Debug.Log("Joined Room.");
-                            Conn = connection;
-                        },
-                        delegate (PlayerIOError error) {
-                            Debug.Log("Error Joining Room: " + error);
-                        }
-                    );
-                },
-                delegate (PlayerIOError error)
-                {
-                    Debug.Log("Error connecting: " + error);
-                }
-            );
-            return true;
-        }
+        public static NetworkManager Client { get; set; } = new();
     }
 }

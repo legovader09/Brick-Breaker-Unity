@@ -21,13 +21,15 @@ namespace GUI
         /// <returns></returns>
         internal IEnumerator PostHighscore(string playerName, int score, int level)
         {
-            Globals.ConnectToPlayerIO(playerName);
-            yield return new WaitUntil(() => Globals.ConsistentClient != null);
+            var client = Globals.Client;
+            client.ConnectToOnlineService(playerName);
+            yield return new WaitUntil(() => Globals.Client.ConsistentClient != null);
 
-            Globals.ConsistentClient.Leaderboards.Set("highscores", "score", score, null);
-            Globals.ConsistentClient.Leaderboards.Set("highscores", "levels", level, null);
+            client.ConsistentClient.Leaderboards.Set("highscores", "score", score, null);
+            client.ConsistentClient.Leaderboards.Set("highscores", "levels", level, null);
 
             PostSuccess = true;
+            client.Disconnect();
             yield return true;
         }
 
@@ -37,11 +39,12 @@ namespace GUI
         /// <returns></returns>
         internal IEnumerator GetHighscores()
         {
-            if (Globals.ConnectToPlayerIO())
+            var client = Globals.Client;
+            if (client.ConnectToOnlineService())
             {
-                yield return new WaitUntil(() => Globals.ConsistentClient != null);
+                yield return new WaitUntil(() => client.ConsistentClient != null);
 
-                Globals.ConsistentClient.Leaderboards.GetTop("highscores", "score", 0, 20, null,
+                client.ConsistentClient.Leaderboards.GetTop("highscores", "score", 0, 20, null,
                     delegate (LeaderboardEntry[] e)
                     {
                         foreach (var entry in e)
