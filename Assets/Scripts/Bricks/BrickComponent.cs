@@ -11,6 +11,7 @@ namespace Bricks
         public BrickColours colour;
         public int state = 2; //2 is full brick, 1 is damaged brick, 0 is broken.
         public GameObject powerupPrefab;
+        public GameSessionData sessionData;
         private Vector2 _ballVel;
         private Camera _mainCamera;
 
@@ -23,14 +24,14 @@ namespace Bricks
 
         private void OnCollisionEnter2D(Collision2D ballCollision)
         {
-            if (!ballCollision.gameObject.CompareTag("Ball") || Globals.GamePaused) return;
+            if (!ballCollision.gameObject.CompareTag("Ball") || sessionData.GamePaused) return;
             state--; //state minus on collision
-            _ballVel = ballCollision.gameObject.GetComponent<Rigidbody2D>().velocity; // get velocity of ball on impact
+            _ballVel = ballCollision.gameObject.GetComponent<Rigidbody2D>().linearVelocity; // get velocity of ball on impact
         }
         
         private void OnTriggerEnter2D(Collider2D laserCollider)
         {
-            if (!laserCollider.gameObject.CompareTag("LaserBeam") || Globals.GamePaused) return;
+            if (!laserCollider.gameObject.CompareTag("LaserBeam") || sessionData.GamePaused) return;
             state--;
             Destroy(laserCollider.gameObject); //destroy laser beam on impact.
             StateCheck(); //set new state of the brick, i.e. set to damaged state, or destroy it if broken.
@@ -48,9 +49,10 @@ namespace Bricks
                 StartCoroutine(Explode());
             }
 
-            if (GameObject.FindGameObjectsWithTag("Brick").Length > 5 || !explosionCollider.CompareTag("Ball")) return;
-            explosionCollider.GetComponent<BallLogic>().HookedByMagnet = true;
-            explosionCollider.GetComponent<BallLogic>().UpdateMagnetic(gameObject); //this enables magnet mode, allows the ball to be physically attracted to the brick object.
+            // TODO: Add magnet as normal powerup
+            // if (GameObject.FindGameObjectsWithTag("Brick").Length > 5 || !explosionCollider.CompareTag("Ball")) return;
+            // explosionCollider.GetComponent<BallLogic>().HookedByMagnet = true;
+            // explosionCollider.GetComponent<BallLogic>().UpdateMagnetic(gameObject); //this enables magnet mode, allows the ball to be physically attracted to the brick object.
         }
 
         private void OnTriggerExit2D(Collider2D ballCollider)
@@ -63,7 +65,7 @@ namespace Bricks
 
         private IEnumerator Explode()
         {
-            yield return new WaitForSeconds(Globals.Random.Next(30, 40) / 100); //wait for a random interval of time.
+            yield return new WaitForSeconds(sessionData.Random.Next(30, 40) / 100); //wait for a random interval of time.
             state = 0;
             GameObject.Find("EventSystem").GetComponent<GameTracker>().UpdateScore(50); //add score for each exploding brick.
             StateCheck(); // Finally destroy the brick.
@@ -84,7 +86,7 @@ namespace Bricks
 
         private IEnumerator PowerupDropCheck()
         {
-            var chance = Globals.Random.Next(0, 100); //random change for powerup to appear.
+            var chance = sessionData.Random.Next(0, 100); //random change for powerup to appear.
 
             gameObject.GetComponent<BoxCollider2D>().isTrigger = true; //trigger allows ball object to go through the brick while the breaking animation plays.
             for (var i = 0; i < 3; i++)
@@ -94,7 +96,7 @@ namespace Bricks
             }
             gameObject.GetComponent<BoxCollider2D>().isTrigger = false; // try to prevent object from going out of bounds by re-adding collision.
 
-            if (chance <= Globals.ChanceToDropPowerup) //if change is within the power up chance rate.
+            if (chance <= sessionData.chanceToDropPowerup) //if change is within the power up chance rate.
             {
                 Instantiate(powerupPrefab, _mainCamera.transform, false)
                     .transform.localPosition = new(gameObject.transform.localPosition.x, 

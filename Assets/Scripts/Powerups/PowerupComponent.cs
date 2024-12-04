@@ -11,6 +11,7 @@ namespace Powerups
     /// </summary>
     public class PowerupComponent : MonoBehaviour
     {
+        public GameSessionData sessionData;
         public bool IsActivated { get; set; }
         public float fallSpeed;
         internal PowerupCodes PowerupType;
@@ -18,7 +19,7 @@ namespace Powerups
         // Start is called before the first frame update
         private void Awake()
         {
-            var powerupCode = Globals.Random.NextDouble() switch
+            var powerupCode = sessionData.Random.NextDouble() switch
             {
                 <= ItemSpawnChance.Pts50 => PowerupCodes.Pts50,
                 <= ItemSpawnChance.Pts100 and > ItemSpawnChance.Pts50 => PowerupCodes.Pts100,
@@ -50,7 +51,7 @@ namespace Powerups
 
         private void Update()
         {
-            gameObject.GetComponent<Rigidbody2D>().velocity = new(0, Globals.GamePaused ? 0 : fallSpeed);
+            gameObject.GetComponent<Rigidbody2D>().linearVelocity = new(0, sessionData.GamePaused ? 0 : fallSpeed);
         }
         
         /// <summary>

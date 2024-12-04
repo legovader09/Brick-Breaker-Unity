@@ -10,68 +10,61 @@ namespace GUI
 {
     public class PauseMenuHelper : MonoBehaviour
     {
+        public Dialog dialogPrefab;
+        public GameSessionData sessionData;
+        private GameObject _eventSystem;
         private bool _exitMode;
+
+        private void Awake()
+        {
+            _eventSystem = GameObject.Find("EventSystem");
+        }
+        
         public void CloseGame()
         {
-            if (Globals.Score > 100 && Globals.Lives == 0)
+            if (sessionData.Score > 100 && sessionData.lives == 0)
             {
                 _exitMode = true;
-                StartCoroutine(ShowSubmitScoreUI());
+                ShowSubmitScoreUI();
             }
             else SceneManager.LoadScene("MainMenu");
         }
 
-        private IEnumerator ShowSubmitScoreUI()
+        private void ShowSubmitScoreUI()
         {
-            var o = Instantiate(GameObject.Find("EventSystem").GetComponent<GameTracker>().scoreDialog, 
-                GameObject.Find("UICanvas").transform);
-            var d = o.GetComponent<Dialog>();
-            d.CreateDialog(
-                "Submit Highscore",
-                $"Would you like to submit your highscore of {Globals.Score}?" +
-                $"\nPlease enter your name below:", true);
-        
-            while (d.DialogResult == DialogResult.None)
-                yield return null; //yield return null allows the coroutine to jump to this line on every call, so while dialog result is none, it will be stuck to returning here.
-
-            var hasPressedConfirm = false;
-
-            if (d.DialogResult == DialogResult.Confirm)
-            { 
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                if (!hasPressedConfirm)
+            StartCoroutine(Dialog.ShowMessageDialog(dialogPrefab, val =>
                 {
-                    hasPressedConfirm = true; //this ensures you cannot spam click the confirm button and cause glitches when uploading highscore.
-                    StartCoroutine(o.GetComponent<HighscoreController>().PostHighscore(d.ResultText.text, Globals.Score,
-                        GetComponent<GameTracker>().currentLevel)); //post score to database.
+                    if (val != DialogResult.Confirm) return;
+                    StartCoroutine(_eventSystem.GetComponent<HighscoreController>().PostHighscore(sessionData.Score,
+                        sessionData.CurrentLevel, success =>
+                        {
+                            StartCoroutine(success
+                                ? Dialog.ShowMessageDialog(dialogPrefab, _ => OnSubmitScore(), "Success!",
+                                    "Your high score has been successfully submitted.")
+                                : Dialog.ShowMessageDialog(dialogPrefab, _ => OnSubmitScore(), "Error!",
+                                    "Could not connect to game server."));
+                        }));
+                },
+                "Submit Highscore",
+                $"Would you like to submit your highscore of {sessionData.Score}?",
+                false));
+            return;
 
-                    while (o.GetComponent<HighscoreController>().PostSuccess == null)
-                        yield return null;
-
-                    if (o.GetComponent<HighscoreController>().PostSuccess == true)
-                        d.CreateDialog("Success!", "Your highscore has been successfully submitted.", false, okOnly: true);
-                    else if (o.GetComponent<HighscoreController>().PostSuccess == false) //needs to be an else if because nullable bool now has 3 values instead of 2, so therefore can't have a flip condition.
-                        d.CreateDialog("Error!", "Could not connect to scoreboard.", false, okOnly: true);
-
-                    while (d.DialogResult == DialogResult.None)
-                        yield return null;
-                }
+            void OnSubmitScore()
+            {
+                if (_exitMode)
+                    SceneManager.LoadScene("MainMenu");
+                else
+                    GetComponent<GameTracker>().RestartGame();
             }
-
-            if (_exitMode)
-                SceneManager.LoadScene("MainMenu");
-            else
-                GetComponent<GameTracker>().RestartGame();
-
-            Destroy(o);
         }
 
         public void Restart()
         {
-            if (Globals.Score > 100)
+            if (sessionData.Score > 100)
             {
                 _exitMode = false;
-                StartCoroutine(ShowSubmitScoreUI());
+                ShowSubmitScoreUI();
             }
             else GetComponent<GameTracker>().RestartGame();
             gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/Restart");

@@ -9,6 +9,7 @@ namespace DiscordRP
     public class DiscordController : MonoBehaviour
     {
 #if UNITY_STANDALONE
+        public GameSessionData sessionData;
         private Discord.Activity _activity = new()
         {
             State = "Main Menu",
@@ -27,7 +28,7 @@ namespace DiscordRP
         {
             try
             {
-                Globals.Discord ??= new(819670954091216936, (ulong)Discord.CreateFlags.NoRequireDiscord);
+                sessionData.Discord ??= new(819670954091216936, (ulong)Discord.CreateFlags.NoRequireDiscord);
                 _activity.Timestamps = new();
                 _activity.Timestamps.Start = (long)(DateTime.UtcNow - _epoch).TotalSeconds;
             }
@@ -38,14 +39,14 @@ namespace DiscordRP
         {
             try
             {
-                Globals.Discord.RunCallbacks();
+                sessionData.Discord.RunCallbacks();
 
                 if (SceneManager.GetActiveScene().name == "GameView")
                 {
-                    _activity.Details = Globals.Lives == 0 
-                        ? $"Game Over | {GameObject.Find("LvlTxt").GetComponent<Text>().text} | Lives: {Globals.Lives}" 
-                        : $"In-Game | {GameObject.Find("LvlTxt").GetComponent<Text>().text} | Lives: {Globals.Lives}";
-                    _activity.State = $"Score: {Globals.Score} | Bricks Left: {Globals.BricksRemaining}";
+                    _activity.Details = sessionData.lives == 0 
+                        ? $"Game Over | {GameObject.Find("LvlTxt").GetComponent<Text>().text} | Lives: {sessionData.lives}" 
+                        : $"In-Game | {GameObject.Find("LvlTxt").GetComponent<Text>().text} | Lives: {sessionData.lives}";
+                    _activity.State = $"Score: {sessionData.Score} | Bricks Left: {sessionData.BricksRemaining}";
                 }
                 else
                 {
@@ -53,7 +54,7 @@ namespace DiscordRP
                     _activity.State = "Main Menu";
                 }
 
-                var activityManager = Globals.Discord.GetActivityManager();
+                var activityManager = sessionData.Discord.GetActivityManager();
                 activityManager.UpdateActivity(_activity, (result) => { if (result != Discord.Result.Ok) Debug.Log("Discord Failed."); });
             }
             catch { /* ignored */ }

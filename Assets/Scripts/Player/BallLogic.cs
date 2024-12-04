@@ -6,6 +6,7 @@ using GUI;
 using LevelData;
 using Powerups;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.U2D;
 
 namespace Player
@@ -15,12 +16,13 @@ namespace Player
     /// </summary>
     public class BallLogic : MonoBehaviour
     {
-        public float MinSpeed = 600f;
-        public float MaxSpeed = 1060f;
+        public float minSpeed = 600f;
+        public float maxSpeed = 1060f;
         public bool stuckToPlayer = true;
+        public GameSessionData sessionData;
         public GameObject player;
         public GameObject explosionCollider;
-        public Vector2 ballVelocity = new(Globals.BallSpeed, Globals.BallSpeed * 1.5f);
+        public Vector2 ballVelocity;
         public Vector2 currentVelocity;
         public Vector2 initLocation;
         public Vector2 currentLocation;
@@ -51,6 +53,7 @@ namespace Player
         {
             //gameObject.transform.position = new Vector2(0, -398);
             initLocation = gameObject.transform.position;
+            ballVelocity = new(sessionData.ballSpeed, sessionData.ballSpeed * 1.5f);
             _guiHelper = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
             _originalColor = gameObject.GetComponent<SpriteShapeRenderer>().color;
             explosionCollider.GetComponent<CircleCollider2D>().enabled = false; //explosion radius collider should be off initially.
@@ -63,29 +66,30 @@ namespace Player
 
         private void FixedUpdate()
         {
-            if (Globals.GamePaused) return;
+            if (sessionData.GamePaused) return;
             if (!HookedByMagnet)
             {
                 if (_canDoPhysics)
                 {
-                    currentVelocity = _rigidBody.velocity;
+                    currentVelocity = _rigidBody.linearVelocity;
                     if (Mathf.FloorToInt(currentVelocity.y) < 20 && Mathf.FloorToInt(currentVelocity.y) > 0) // this ensures ball is not stuck being unreachable by player.
-                        _rigidBody.velocity = new(currentVelocity.x, safetyYVelocity); //minimum velocity in the Y axis which is configurable.
+                        _rigidBody.linearVelocity = new(currentVelocity.x, safetyYVelocity); //minimum velocity in the Y axis which is configurable.
 
                     if (Mathf.FloorToInt(currentVelocity.y) > -20 && Mathf.FloorToInt(currentVelocity.y) < 0) // this ensures ball is not stuck being unreachable by player.
-                        _rigidBody.velocity = new(currentVelocity.x, -safetyYVelocity); //minimum velocity in the (minus)Y axis which is configurable.
+                        _rigidBody.linearVelocity = new(currentVelocity.x, -safetyYVelocity); //minimum velocity in the (minus)Y axis which is configurable.
 
                     speed = currentVelocity.magnitude; //measures ball's magnitude.
 
                     // ensures ball does not exceed, or reach the lower threshold of the min and max speed limit.
-                    if (speed < _currentMinSpeed) _rigidBody.velocity = currentVelocity.normalized * _currentMinSpeed;
-                    if (speed > _currentMaxSpeed) _rigidBody.velocity = currentVelocity.normalized * _currentMaxSpeed;
+                    if (speed < _currentMinSpeed) _rigidBody.linearVelocity = currentVelocity.normalized * _currentMinSpeed;
+                    if (speed > _currentMaxSpeed) _rigidBody.linearVelocity = currentVelocity.normalized * _currentMaxSpeed;
                 }
                 currentLocation = gameObject.transform.position;
             }
             else
             {
-                FixedUpdateMagnetic();
+                // TODO: make magnet a normal powerup
+                // FixedUpdateMagnetic();
             }
         }
 
@@ -120,7 +124,7 @@ namespace Player
         // Update is called once per frame
         private void Update()
         {
-            if (!Globals.GamePaused)
+            if (!sessionData.GamePaused)
             {
                 if (stuckToPlayer) //if attached to player, enable joint component which disallows the ball to move independently.
                 {
@@ -134,8 +138,8 @@ namespace Player
                     _fixedJoint2D.enabled = false;
                     if (!_canDoPhysics)
                     {
-                        var random = Globals.Random.Next(0, 2); //50% chance to go left, or right.
-                        gameObject.GetComponent<Rigidbody2D>().velocity = random == 0 
+                        var random = sessionData.Random.Next(0, 2); //50% chance to go left, or right.
+                        _rigidBody.linearVelocity = random == 0 
                             ? ballVelocity : new(-ballVelocity.x, ballVelocity.y);
 
                         _canDoPhysics = true;
@@ -174,16 +178,16 @@ namespace Player
             switch (state)
             {
                 case 0:
-                    _currentMinSpeed = MinSpeed;
-                    _currentMaxSpeed = MaxSpeed;
+                    _currentMinSpeed = minSpeed;
+                    _currentMaxSpeed = maxSpeed;
                     break;
                 case 1:
-                    _currentMinSpeed = MinSpeed + 100f;
-                    _currentMaxSpeed = MaxSpeed + 100f;
+                    _currentMinSpeed = minSpeed + 100f;
+                    _currentMaxSpeed = maxSpeed + 100f;
                     break;
                 case 2:
-                    _currentMinSpeed = MinSpeed - 200f;
-                    _currentMaxSpeed = MaxSpeed - 200f;
+                    _currentMinSpeed = minSpeed - 200f;
+                    _currentMaxSpeed = maxSpeed - 200f;
                     break;
             }
             _currentMinSpeed += levelMultiplier;
@@ -207,14 +211,14 @@ namespace Player
         /// </summary>
         internal void PauseBall()
         {
-            if (Globals.GamePaused)
+            if (sessionData.GamePaused)
             {
-                _pauseVelocity = _rigidBody.velocity;
-                _rigidBody.velocity = Vector2.zero;
+                _pauseVelocity = _rigidBody.linearVelocity;
+                _rigidBody.linearVelocity = Vector2.zero;
             }
             else
             {
-                _rigidBody.velocity = _pauseVelocity;
+                _rigidBody.linearVelocity = _pauseVelocity;
             }
         }
 
@@ -224,7 +228,7 @@ namespace Player
             {
                 gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/TakeDamage");
                 ResetBall();
-                Globals.Lives--;
+                sessionData.lives--;
                 ResetSpeed();
                 RemovePowerupIndicators();
             }
@@ -237,7 +241,7 @@ namespace Player
         internal void ResetBall()
         {
             ActivateFireBall(false);
-            _rigidBody.velocity = Vector2.zero;
+            _rigidBody.linearVelocity = Vector2.zero;
             stuckToPlayer = true;
             gameObject.transform.position = initLocation;
             var playerController = player.GetComponent<PlayerController>();

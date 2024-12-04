@@ -34,7 +34,7 @@ namespace GUI
         /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to add.</param>
         internal void AddPowerupToSidebar(PowerupCodes powerup)
         {
-            if (_powerList.Any(item => item.PowerupCode == powerup)) return;
+            if (CheckIfPowerupExists(powerup)) return;
             var indicator = Instantiate(indicatorPrefab, parent.transform, false);
             indicator.transform.localPosition = new(initPosition.x,
                 initPosition.y + indicator.GetComponent<RectTransform>().rect.height * _powerList.Count, initPosition.z);
@@ -49,7 +49,7 @@ namespace GUI
         /// <remarks>Make sure to call this function with <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"></see>.</remarks>
         internal IEnumerator ShowPowerupExpiring(PowerupCodes powerup)
         {
-            if (_powerList.All(item => item.PowerupCode != powerup)) yield break;
+            if (!CheckIfPowerupExists(powerup)) yield break;
 
             var indicator = _powerList.First(item => item.PowerupCode == powerup).PowerupPrefab;
             var image = indicator.GetComponent<Image>();
@@ -82,7 +82,7 @@ namespace GUI
         /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to remove.</param>
         internal void RemovePowerupFromSidebar(PowerupCodes powerup)
         {
-            if (_powerList.All(item => item.PowerupCode != powerup)) return;
+            if (!CheckIfPowerupExists(powerup)) return;
             var matchPowerup = _powerList.First(item => item.PowerupCode == powerup);
             Destroy(matchPowerup.PowerupPrefab);
             _powerList.Remove(matchPowerup);

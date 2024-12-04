@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using Unity.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace GUI
@@ -8,15 +11,15 @@ namespace GUI
     /// </summary>
     public class Dialog : MonoBehaviour
     {
-        public Rect position;
-        public Text txtTitle;
-        public Text txtDesc;
-        public Button btnGo;
-        public Button btnBack;
-        public InputField inputText;
+        private static Dialog _currentDialog;
+        [SerializeField] private GameObject panel;
+        [SerializeField] private Text txtTitle;
+        [SerializeField] private Text txtDesc;
+        [SerializeField] private Button btnBack;
+        [SerializeField] private InputField inputText;
 
-        internal DialogResult DialogResult = DialogResult.None;
-        public Text ResultText { get; set; }
+        [ReadOnly] public DialogResult dialogResult = DialogResult.None;
+        private string _resultText;
         private bool _requireText = true;
         private bool _showInput;
 
@@ -24,41 +27,25 @@ namespace GUI
         /// Sets the dialog result field of this Dialog instance.
         /// Note: Dialog result will not be set if inputfield is enabled, and empty, and text is required.
         /// </summary>
-        /// <param name="result">The numeric result of the DialogResult enumerator.</param>
+        /// <param name="result">The result of the Dialog.</param>
         public void SetResult(int result)
         {
-            if (DialogResult == DialogResult.None)
+            var res = (DialogResult)result;
+            if (res == DialogResult.Cancel)
             {
-                if (result == 2)
-                {
-                    DialogResult = (DialogResult)result;
-                }
-                else if (result == 1)
-                {
-                    if (ResultText.text.Length == 0)
-                    {
-                        if (_requireText && _showInput)
-                            return;
-                    }
-                    else DialogResult = (DialogResult)result;
-                }
+                dialogResult = res;
+                return;
             }
+        
+            if (inputText.text.Trim().Length == 0 && _requireText && _showInput)
+                return;
+        
+            dialogResult = res;
         }
 
-        // Start is called before the first frame update
-        private void Start() => ToggleDialog(true);
-
-        /// <summary>
-        /// Initialises, and displays the Dialog to the user.
-        /// </summary>
-        /// <param name="title">THe title of the dialog.</param>
-        /// <param name="description">The subtitle, or descriptive text of the dialog.</param>
-        /// <param name="showInputField">If true, will show a text input field.</param>
-        /// <param name="requireTextInput">If showInputField is true, set this to true if text response is required.</param>
-        /// <param name="okOnly">Show the "Confirm" button only.</param>
-        public void CreateDialog(string title, string description, bool showInputField, bool requireTextInput = true, bool okOnly = false)
+        private void CreateDialog(string title, string description, bool showInputField, bool requireTextInput = true, bool okOnly = false)
         {
-            DialogResult = DialogResult.None;
+            dialogResult = DialogResult.None;
 
             txtTitle.text = title;
             txtDesc.text = description;
@@ -66,16 +53,63 @@ namespace GUI
             _showInput = showInputField;
 
             if (showInputField)
-                ResultText = inputText.GetComponentInChildren<Text>();
-
-            if (okOnly)
-                btnBack.gameObject.SetActive(false);
+                inputText.onValueChanged.AddListener(value => _resultText = value);
+            else
+                panel.GetComponent<RectTransform>().sizeDelta = new(900, 200);
+            
+            if (okOnly) btnBack.gameObject.SetActive(false);
 
             _requireText = requireTextInput;
-            gameObject.SetActive(true);
+            ToggleDialog(true);
+        }
+    
+        /// Toggles visibility of the dialog.
+        private void ToggleDialog(bool state) => gameObject.SetActive(state);
+
+        /// <summary>
+        /// Initialises, and displays an input dialog to the user.
+        /// </summary>
+        /// <param name="dialog">The dialog prefab to instantiate.</param>
+        /// <param name="resultsAction">The callback to retrieve input value.</param>
+        /// <param name="title">The title of the dialog.</param>
+        /// <param name="description">The subtitle, or descriptive text of the dialog.</param>
+        /// <param name="requireTextInput">If showInputField is true, set this to true if text response is required.</param>
+        /// <param name="okOnly">Determine whether to hide the "cancel" button.</param>
+        public static IEnumerator ShowInputDialog(Dialog dialog, Action<string> resultsAction, string title,
+            string description, bool requireTextInput = true, bool okOnly = false)
+        {
+            yield return new WaitUntil(() => !_currentDialog);
+            _currentDialog = dialog;
+            var d = Instantiate(dialog);
+            d.CreateDialog(title, description, true, requireTextInput, okOnly);
+            yield return new WaitWhile(() => d.dialogResult == DialogResult.None);
+            if (d.dialogResult == DialogResult.Confirm)
+            {
+                resultsAction(d._resultText);
+            }
+            _currentDialog = null;
+            Destroy(d.gameObject);
         }
 
-        private void ToggleDialog(bool state) => gameObject.SetActive(state); //Toggles visibility of the dialog.
-
+        /// <summary>
+        /// Initialises, and displays a message only dialog to the user.
+        /// </summary>
+        /// <param name="dialog">The dialog prefab to instantiate.</param>
+        /// <param name="resultsAction">The callback to retrieve input value.</param>
+        /// <param name="title">The title of the dialog.</param>
+        /// <param name="description">The subtitle, or descriptive text of the dialog.</param>
+        public static IEnumerator ShowMessageDialog(Dialog dialog, Action<DialogResult> resultsAction, string title, string description, bool okOnly = true)
+        {
+            yield return new WaitUntil(() => !_currentDialog);
+            _currentDialog = dialog;
+        
+            var d = Instantiate(dialog);
+            d.CreateDialog(title, description, false, false, okOnly);
+            yield return new WaitWhile(() => d.dialogResult == DialogResult.None);
+            resultsAction(d.dialogResult);
+        
+            _currentDialog = null;
+            Destroy(d.gameObject);
+        }
     }
 }

@@ -2,8 +2,6 @@
 {
     public enum DialogResult
     {
-        None = 0,
-        Confirm = 1,
-        Cancel = 2
+        None, Confirm, Cancel
     }
 }

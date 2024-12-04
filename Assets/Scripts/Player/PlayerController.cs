@@ -6,7 +6,6 @@ using GUI;
 using LevelData;
 using Powerups;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.U2D;
 
 namespace Player
@@ -16,20 +15,21 @@ namespace Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
+        public GameSessionData sessionData;
         public GameObject laserBeamPrefab;
-        public GameObject powerupHelper;
         public GameObject paddleBase;
         public bool cancelFire;
         private Vector2 _mousePos;
         private bool _hasBallAttached = true;
         private Vector2 _originalPosition;
         private GameObject _ball;
-        private GameTracker _score;
+        private GameTracker _gameTracker;
         private GUIHelper _powerupUI;
         private Rigidbody2D _rigidBody;
         private Camera _mainCamera;
         private GameObject _eventSystem;
         private Vector2 _mouseTargetPosition;
+        private PowerupHelper _powerupHelper;
 
         /// <summary>Used to indicate whether the paddle is firing laser beams.</summary> 
         public bool IsFiring { get; private set; }
@@ -39,10 +39,11 @@ namespace Player
         {
             _eventSystem = GameObject.Find("EventSystem");
             _ball = GameObject.FindGameObjectWithTag("Ball");
-            _score = _eventSystem.GetComponent<GameTracker>(); 
+            _gameTracker = _eventSystem.GetComponent<GameTracker>(); 
             _powerupUI = _eventSystem.GetComponent<GUIHelper>();
             _originalPosition = gameObject.transform.position;
             _rigidBody = gameObject.GetComponent<Rigidbody2D>();
+            _powerupHelper = _eventSystem.GetComponent<PowerupHelper>();
             _mainCamera = Camera.main;
         }
 
@@ -60,13 +61,13 @@ namespace Player
 
         private void FixedUpdate()
         {
-            if (Globals.GamePaused)
+            if (sessionData.GamePaused)
             {
-                _rigidBody.velocity = Vector2.zero;
+                _rigidBody.linearVelocity = Vector2.zero;
                 return;
             }
 
-            if (Globals.AIMode) 
+            if (sessionData.AIMode) 
             {
                 if (_ball.GetComponent<BallLogic>().currentVelocity.y > 0)
                 {
@@ -87,9 +88,9 @@ namespace Player
 
         private void LateUpdate()
         {
-            if (_hasBallAttached && !Globals.GamePaused)
+            if (_hasBallAttached && !sessionData.GamePaused)
             {
-                if ((Input.GetMouseButtonDown(0) && Input.mousePosition.y < 850) || Globals.AIMode)
+                if ((Input.GetMouseButtonDown(0) && Input.mousePosition.y < 850) || sessionData.AIMode)
                 {
                     var ball = _ball.GetComponent<BallLogic>();
                     ball.stuckToPlayer = false;
@@ -97,7 +98,7 @@ namespace Player
                 }
             }
             
-            if (!Globals.GamePaused && !Globals.AIMode)
+            if (!sessionData.GamePaused && !sessionData.AIMode)
             {
                 // Get the target position from the mouse
                 var mousePosition = Input.mousePosition;
@@ -110,17 +111,17 @@ namespace Player
 
 #if UNITY_EDITOR
             if (Input.GetKeyUp(KeyCode.T))
-                Globals.AIMode = !Globals.AIMode;
+                sessionData.AIMode = !sessionData.AIMode;
 #endif
             if (!Input.GetKeyUp(KeyCode.R)) return;
             _ball.GetComponent<BallLogic>().ResetBall();
-            Globals.Lives--;
+            sessionData.lives--;
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
             if (!collision.gameObject.CompareTag("Wall")) return; //if paddle hits map boundaries, immediately stop acceleration to prevent clipping.
-            _rigidBody.velocity = Vector2.zero;
+            _rigidBody.linearVelocity = Vector2.zero;
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -147,22 +148,22 @@ namespace Player
             {
                 default:
                 case PowerupCodes.Pts50:
-                    _score.UpdateScore(50);
+                    _gameTracker.UpdateScore(50);
                     break;
                 case PowerupCodes.Pts100:
-                    _score.UpdateScore(100);
+                    _gameTracker.UpdateScore(100);
                     break;
                 case PowerupCodes.Pts250:
-                    _score.UpdateScore(250);
+                    _gameTracker.UpdateScore(250);
                     break;
                 case PowerupCodes.Pts500:
-                    _score.UpdateScore(500);
+                    _gameTracker.UpdateScore(500);
                     break;
                 case PowerupCodes.SlowBall:
                     var slowCall = _ball.GetComponent<BallLogic>().ChangeSpeed(2); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
                     StopCoroutine(slowCall);
                     StartCoroutine(slowCall);
-                    _score.UpdateScore(20);
+                    _gameTracker.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.FastBall);
                     break;
@@ -170,28 +171,38 @@ namespace Player
                     var speedCall = _ball.GetComponent<BallLogic>().ChangeSpeed(1); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
                     StopCoroutine(speedCall);
                     StartCoroutine(speedCall);
-                    _score.UpdateScore(40);
+                    _gameTracker.UpdateScore(40);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.SlowBall);
                     break;
                 case PowerupCodes.TripleBall:
                     _hasBallAttached = false;
-                    _score.UpdateScore(50);
+                    _gameTracker.UpdateScore(50);
                     var ballCollection = GameObject.FindGameObjectsWithTag("Ball");
                     if (ballCollection.Length > 15)
                     {
                         // reward the player for somehow juggling 15 balls.
-                        _score.UpdateScore(1000);
+                        _gameTracker.UpdateScore(1000);
                     }
                     else
                     {
+                        var colorSequence = new [] { Color.green, Color.yellow, new Color(1.0f, 0.65f, 0.0f) };
+                        var currentColorIndex = -1;
                         foreach (var ball in ballCollection)
                         {
+                            var sprite = ball.GetComponent<SpriteShapeRenderer>();
+                            for (var index = 0; index < colorSequence.Length; index++)
+                            {
+                                if (!sprite.color.Equals(colorSequence[index])) continue;
+                                currentColorIndex = index;
+                                break;
+                            }
+                            
                             for (var i = 0; i < 2; i++)
                             {
                                 var instance = Instantiate(ball, ball.transform.parent, false);
                                 instance.GetComponent<BallLogic>().IsFake = true;
-                                instance.GetComponent<SpriteShapeRenderer>().color = ball.GetComponent<BallLogic>().IsFake ? Color.yellow : Color.green;
+                                instance.GetComponent<SpriteShapeRenderer>().color = colorSequence[(currentColorIndex + 1) % colorSequence.Length];
                                 instance.GetComponent<BallLogic>().stuckToPlayer = false;
                             }
                         }
@@ -199,45 +210,42 @@ namespace Player
                     break;
                 case PowerupCodes.ShrinkPaddle:
                     paddleBase.GetComponent<PaddleSynchronizer>().ModifyPaddleSize(.80f);
-                    _score.UpdateScore(50);
+                    _gameTracker.UpdateScore(50);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
                     break;
                 case PowerupCodes.GrowPaddle:
                     paddleBase.GetComponent<PaddleSynchronizer>().ModifyPaddleSize(1.2f);
-                    _score.UpdateScore(20);
+                    _gameTracker.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
                     break;
                 case PowerupCodes.LaserBeam:
                     StartCoroutine(FireBeams());
                     _powerupUI.AddPowerupToSidebar(id);
-                    _score.UpdateScore(50);
+                    _gameTracker.UpdateScore(50);
                     break;
                 case PowerupCodes.LifeUp:
-                    if (Globals.Lives < 6)
-                        Globals.Lives++;
+                    if (sessionData.lives < 6)
+                        sessionData.lives++;
                     else
-                        _score.UpdateScore(250);
+                        _gameTracker.UpdateScore(250);
                     break;
                 case PowerupCodes.SafetyNet:
-                    Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetSafetyNet();
-                    _powerupUI.AddPowerupToSidebar(id);
-                    _score.UpdateScore(50);
+                    _powerupHelper.ActivatePowerup(id, 10f, () => _gameTracker.safetyNet.SetActive(true), () => _gameTracker.safetyNet.SetActive(false));
+                    _gameTracker.UpdateScore(50);
                     break;
                 case PowerupCodes.DoublePoints:
-                    Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetMultiplier(2f);
-                    _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.HalfPoints);
+                    _powerupHelper.RemovePowerup(PowerupCodes.HalfPoints);
+                    _powerupHelper.ActivatePowerup(id, 10f, () => sessionData.scoreMultiplier = 2f, () => sessionData.scoreMultiplier = 1f);
                     break;
                 case PowerupCodes.RedFireBall:
                     _ball.GetComponent<BallLogic>().ActivateFireBall(true);
-                    _score.UpdateScore(50);
+                    _gameTracker.UpdateScore(50);
                     break;
                 case PowerupCodes.HalfPoints:
-                    Instantiate(powerupHelper, gameObject.transform).GetComponent<PowerupHelper>().SetMultiplier(0.5f);
-                    _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.DoublePoints);
+                    _powerupHelper.RemovePowerup(PowerupCodes.DoublePoints);
+                    _powerupHelper.ActivatePowerup(id, 10f, () => sessionData.scoreMultiplier = .5f, () => sessionData.scoreMultiplier = 1f);
                     break;
             }
         }
@@ -249,7 +257,7 @@ namespace Player
             while (shotsFired < 5)
             {
                 IsFiring = true;
-                if (!Globals.GamePaused)
+                if (!sessionData.GamePaused)
                 {
                     Instantiate(laserBeamPrefab, 
                             GameObject.FindGameObjectWithTag("MainCamera").transform, false).transform.position = 
@@ -269,7 +277,7 @@ namespace Player
                     yield return new WaitForSeconds(shootDelay);
                     shotsFired++;
                 }
-                yield return new WaitUntil(() => Globals.GamePaused == false); //this line is iterated through if the game is running, but should the game be paused, the thread will come back tot his line again until the game is unpaused again.
+                yield return new WaitUntil(() => sessionData.GamePaused == false); //this line is iterated through if the game is running, but should the game be paused, the thread will come back tot his line again until the game is unpaused again.
                 if (cancelFire) //if after the pause check, the firing has been cancelled, exit the loop immediately.
                 {
                     cancelFire = false;

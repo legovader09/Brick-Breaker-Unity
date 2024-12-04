@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 9
+  serializedVersion: 10
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -38,13 +38,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
-  m_GIWorkflowMode: 1
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -67,9 +66,6 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_FinalGather: 0
-    m_FinalGatherFiltering: 1
-    m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
     m_MixedBakeMode: 2
     m_BakeBackend: 1
@@ -256,6 +252,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -422,6 +421,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb5d4961bdf7fb44ad4ef8279dcabb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sessionData: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
 --- !u!1 &664719414
 GameObject:
   m_ObjectHideFlags: 0
@@ -456,8 +456,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 679.3, y: 425.1}
-  m_SizeDelta: {x: 128.86664, y: 30}
+  m_AnchoredPosition: {x: 586.02875, y: 425.1}
+  m_SizeDelta: {x: 315.4093, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &664719416
 MonoBehaviour:
@@ -605,6 +605,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 943519836}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -628,7 +629,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -639,7 +641,6 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 1
-  serializedVersion: 2
   m_Size: {x: 4.0000005, y: 4}
   m_EdgeRadius: 0
 --- !u!114 &943519840
@@ -703,9 +704,14 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 0
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment: []
+  m_ShadowSegment: []
 --- !u!1971053207 &943519841
 SpriteShapeRenderer:
   m_ObjectHideFlags: 0
@@ -723,6 +729,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -805,6 +814,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -921,9 +933,14 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 0
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment: []
+  m_ShadowSegment: []
 --- !u!1971053207 &1127668132
 SpriteShapeRenderer:
   m_ObjectHideFlags: 0
@@ -941,6 +958,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1298,7 +1318,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1561575695}
         m_TargetAssemblyTypeName: GameTracker, Assembly-CSharp
-        m_MethodName: PauseGame
+        m_MethodName: TogglePauseGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1390,7 +1410,7 @@ RectTransform:
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &1503702668
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1404,6 +1424,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -1568,6 +1589,8 @@ GameObject:
   - component: {fileID: 1561575698}
   - component: {fileID: 1561575699}
   - component: {fileID: 1561575700}
+  - component: {fileID: 1561575701}
+  - component: {fileID: 1561575702}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -1647,10 +1670,10 @@ MonoBehaviour:
   lvlIndicatorTxt: {fileID: 664719416}
   indicator: {fileID: 6480357558666831134, guid: 7680ef55db446864f869e677f26fe13e, type: 3}
   safetyNet: {fileID: 943519836}
-  scoreDialog: {fileID: 2753958873443337462, guid: f7458868491117b4b9af2529303de180, type: 3}
   player: {fileID: 1974716451}
   ball: {fileID: 723714877}
-  currentLevel: 0
+  heartContainer: {fileID: 4864910392578638548}
+  sessionData: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
   startingCoords: {x: 150, y: 833}
 --- !u!114 &1561575696
 MonoBehaviour:
@@ -1678,6 +1701,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1775,7 +1799,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f82f6fa4832c23644b2a65be84f05c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioType: 0
+  audioTypes: 0
 --- !u!114 &1561575699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1788,6 +1812,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1847d098f591482479dffa3cb6bbf6b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dialogPrefab: {fileID: 1001980609573656953, guid: 7d62afebfb5b63641aed41246fc51106, type: 3}
+  sessionData: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
 --- !u!114 &1561575700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1800,6 +1826,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abe799f9ab4798a4f8bcbf6dedfce2b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sessionData: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
+--- !u!114 &1561575701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561575691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 958f0316146b14543995fc32224e982b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1561575702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561575691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1222e7d2232e56458d7c22f60d99362, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvas: {fileID: 0}
+  leadboardEntryPrefab: {fileID: 0}
+  sessionData: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
 --- !u!1 &1614122750
 GameObject:
   m_ObjectHideFlags: 0
@@ -1849,6 +1903,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -2451,6 +2508,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -3143,7 +3203,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1561575695}
         m_TargetAssemblyTypeName: GameTracker, Assembly-CSharp
-        m_MethodName: PauseGame
+        m_MethodName: TogglePauseGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3218,6 +3278,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3129236502848910490}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -3241,7 +3302,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -3252,7 +3314,6 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 1
-  serializedVersion: 2
   m_Size: {x: 4.0000005, y: 4}
   m_EdgeRadius: 0
 --- !u!114 &666351632726689337
@@ -3370,7 +3431,7 @@ MonoBehaviour:
   m_PresetInfoIsWorld: 1
 --- !u!95 &2515373266694626483
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3384,6 +3445,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -3507,9 +3569,14 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 0
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment: []
+  m_ShadowSegment: []
 --- !u!1971053207 &3129236502848910492
 SpriteShapeRenderer:
   m_ObjectHideFlags: 0
@@ -3527,6 +3594,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -3595,6 +3665,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1127668130}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -3618,7 +3689,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -3629,7 +3701,6 @@ BoxCollider2D:
     drawMode: 2
     adaptiveTiling: 1
   m_AutoTiling: 1
-  serializedVersion: 2
   m_Size: {x: 4.0000005, y: 4}
   m_EdgeRadius: 0
 --- !u!1 &3724916843679391175
@@ -3958,6 +4029,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4087,9 +4161,14 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 0
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment: []
+  m_ShadowSegment: []
 --- !u!114 &5674992329566269160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4119,7 +4198,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 425.8}
-  m_SizeDelta: {x: 278.2301, y: 30}
+  m_SizeDelta: {x: 410.7915, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6235932213454916653
 MonoBehaviour:
@@ -4163,6 +4242,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5674992329566269158}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -4186,7 +4266,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -4197,7 +4278,6 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 1
-  serializedVersion: 2
   m_Size: {x: 4.0000005, y: 4}
   m_EdgeRadius: 0
 --- !u!4 &7397953175028282674
@@ -4273,6 +4353,10 @@ PrefabInstance:
       propertyPath: MaxSpeed
       value: 900
       objectReference: {fileID: 0}
+    - target: {fileID: 2357532302938118577, guid: 97c625b9a00170445b813bf0a699e6c9, type: 3}
+      propertyPath: sessionData
+      value: 
+      objectReference: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
     - target: {fileID: 4020486232284168255, guid: 97c625b9a00170445b813bf0a699e6c9, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -4341,6 +4425,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ball
       objectReference: {fileID: 0}
+    - target: {fileID: 8307622643080694302, guid: 97c625b9a00170445b813bf0a699e6c9, type: 3}
+      propertyPath: m_Volume
+      value: 0.703
+      objectReference: {fileID: 0}
     - target: {fileID: 8307622643532348973, guid: 97c625b9a00170445b813bf0a699e6c9, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -4371,6 +4459,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4454,6 +4545,10 @@ PrefabInstance:
       propertyPath: arrowAnchor
       value: 
       objectReference: {fileID: 69478667}
+    - target: {fileID: 2664676642908596863, guid: cbd9eadbf35e0bc41a51c2b3b179f402, type: 3}
+      propertyPath: sessionData
+      value: 
+      objectReference: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
     - target: {fileID: 2717105241424462901, guid: cbd9eadbf35e0bc41a51c2b3b179f402, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

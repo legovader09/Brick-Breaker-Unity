@@ -1,83 +1,89 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Enums;
 using GUI;
-using LevelData;
 using UnityEngine;
 
 namespace Powerups
 {
     public class PowerupHelper : MonoBehaviour
     {
-        private GUIHelper _gui;
-        private IEnumerator _multiplyFlash;
-        private IEnumerator _safetyNetFlash;
+        private const float WarningThreshold = 3f;
+        private readonly Dictionary<PowerupCodes, Coroutine> _activePowerupCoroutines = new();
+        private readonly Dictionary<PowerupCodes, float> _remainingDurations = new();
+        private readonly Dictionary<PowerupCodes, Coroutine> _warningCoroutines = new();
+        private PowerupCodes _powerupId;
+        private GUIHelper _guiHelper;
 
-        // Start is called before the first frame update
-        internal void SetMultiplier(float multiplyVal)
+        private void Awake()
         {
-            var mp = SetMultiplierEnumerator(multiplyVal);
-            StopCoroutine(mp);
-            StartCoroutine(mp);
+            _guiHelper = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
         }
 
         /// <summary>
-        /// Sets the score multiplier.
+        /// Activates a power-up with a specified duration and custom start and end actions.
         /// </summary>
-        /// <param name="multiplyVal">The float value to set the score multiplier by (usually 2 for double, and 0.5 for half)</param>
-        /// <returns></returns>
-        private IEnumerator SetMultiplierEnumerator(float multiplyVal)
+        /// <param name="id">The ID of the power-up.</param>
+        /// <param name="duration">The duration for the power-up effect.</param>
+        /// <param name="onStartAction">Action to execute at the start of the power-up.</param>
+        /// <param name="onEndAction">Action to execute when the power-up ends.</param>
+        public void ActivatePowerup(PowerupCodes id, float duration, Action onStartAction, Action onEndAction)
         {
-            if (_multiplyFlash != null) StopCoroutine(_multiplyFlash);
+            _guiHelper.AddPowerupToSidebar(id);
+            if (_remainingDurations.TryAdd(id, 0)) onStartAction?.Invoke();
+            _remainingDurations[id] += duration;
 
-            _gui = GameObject.Find("EventSystem").GetComponent<GUIHelper>();
-            Globals.ScoreMultiplier = multiplyVal;
+            if (_warningCoroutines.TryGetValue(id, out var existingWarningCoroutine))
+            {
+                StopCoroutine(existingWarningCoroutine);
+                _warningCoroutines.Remove(id);
+            }
 
-            yield return new WaitForSeconds(7f);
-
-            _multiplyFlash = _gui.ShowPowerupExpiring(Mathf.Approximately(multiplyVal, 2f) 
-                ? PowerupCodes.DoublePoints 
-                : PowerupCodes.HalfPoints);
-
-            StartCoroutine(_multiplyFlash);
-
-            yield return new WaitForSeconds(3f);
-
-            Globals.ScoreMultiplier = 1f;
-            _gui.RemovePowerupFromSidebar(PowerupCodes.DoublePoints);
-            _gui.RemovePowerupFromSidebar(PowerupCodes.HalfPoints);
-            Destroy(gameObject);
+            if (_activePowerupCoroutines.ContainsKey(id)) return;
+            var coroutine = StartCoroutine(PowerupRoutine(id, onEndAction));
+            _activePowerupCoroutines[id] = coroutine;
         }
-
-        internal void SetSafetyNet()
-        {
-            var sn = SetSafetyNetEnumerator();
-            StopCoroutine(sn);
-            StartCoroutine(sn);
-        }
-
+        
         /// <summary>
-        /// Set the safety net at the bottom of the screen, lasts 10 in game seconds.
+        /// Removes a powerup from the tracker and immediately stops any ongoing coroutines for that powerup.
         /// </summary>
-        /// <returns></returns>
-        private IEnumerator SetSafetyNetEnumerator()
+        /// <param name="id">The ID of the power-up.</param>
+        public void RemovePowerup(PowerupCodes id)
         {
-            if (_safetyNetFlash != null) StopCoroutine(_safetyNetFlash);
+            if (_activePowerupCoroutines.TryGetValue(id, out var coroutine))
+            {
+                StopCoroutine(coroutine);
+                _activePowerupCoroutines.Remove(id);
+                _guiHelper.RemovePowerupFromSidebar(id);
+            }
 
-            GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(true);
-            yield return new WaitForSeconds(7f);
+            if (_remainingDurations.ContainsKey(id)) _remainingDurations.Remove(id);
+        }
+        
+        private IEnumerator PowerupRoutine(PowerupCodes id, Action onEndAction)
+        {
+            while (_remainingDurations[id] > 0)
+            {
+                if (_remainingDurations[id] <= WarningThreshold)
+                {
+                    if (!_warningCoroutines.ContainsKey(id))
+                    {
+                        var warningCoroutine = StartCoroutine(_guiHelper.ShowPowerupExpiring(id));
+                        _warningCoroutines[id] = warningCoroutine;
+                    }
+                }
 
-            _safetyNetFlash = GameObject.Find("EventSystem"). // show powerup expiring after 7 seconds, to give a 3 second notice.
-                GetComponent<GUIHelper>().
-                ShowPowerupExpiring(PowerupCodes.SafetyNet);
+                _remainingDurations[id] -= Time.deltaTime;
+                yield return null;
+            }
 
-            StartCoroutine(_safetyNetFlash);
+            onEndAction?.Invoke();
+            _guiHelper.RemovePowerupFromSidebar(id);
 
-            yield return new WaitForSeconds(3f);
-            GameObject.Find("EventSystem").GetComponent<GameTracker>().safetyNet.SetActive(false);
-            GameObject.Find("EventSystem").GetComponent<GUIHelper>().
-                RemovePowerupFromSidebar(PowerupCodes.SafetyNet);
-
-            Destroy(gameObject);
+            _activePowerupCoroutines.Remove(id);
+            _remainingDurations.Remove(id);
+            if (_warningCoroutines.ContainsKey(id)) _warningCoroutines.Remove(id);
         }
     }
 }

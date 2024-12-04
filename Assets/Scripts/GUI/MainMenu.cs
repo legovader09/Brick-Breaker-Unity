@@ -13,13 +13,36 @@ namespace GUI
         public Text inputText;
         public Toggle endlessToggle;
         public Button btnQuit;
-
+        public Dialog dialogPrefab;
+        public GameSessionData sessionData;
         public GameObject pnlLeaderboard;
 
         // Start is called before the first frame update
         private void Start()
         {
-            GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{Globals.Random.Next(1, 3)}", true); //play random BGM
+            if (!PlayerPrefs.HasKey("username") || PlayerPrefs.GetString("username").Trim().Length == 0)
+            {
+                StartCoroutine(Dialog.ShowInputDialog(dialogPrefab, val =>
+                {
+                    PlayerPrefs.SetString("username", val);
+                    PlayerPrefs.Save();
+                },
+                "Pick a Username", "This will be shown on the leaderboard and online matches.", okOnly: true));
+            }
+            
+            sessionData.Initialize(success =>
+            {
+                GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{sessionData.Random.Next(1, 3)}", true); //play random BGM
+                if (success) return;
+                sessionData.ErrorMessage = "Unable to connect to game servers.";
+                SceneManager.LoadScene("MainMenu");
+            });
+
+            if (sessionData.ErrorMessage != string.Empty)
+            {
+                StartCoroutine(Dialog.ShowMessageDialog(dialogPrefab, _ => sessionData.ErrorMessage = string.Empty,
+                    "Error", sessionData.ErrorMessage));
+            }
 
             // add quit function
 #if UNITY_STANDALONE
@@ -72,7 +95,7 @@ namespace GUI
         public void CustomLevelGUI()
         {
             inputCustomLvl.gameObject.SetActive(true);
-            inputCustomLvl.text = Globals.CustomLevelData;
+            inputCustomLvl.text = sessionData.CustomLevelData;
         }
 
         public void LeaveCustomLevelGUI()
@@ -84,22 +107,22 @@ namespace GUI
         public void LaunchCustomLevelGUI()
         {
             if (!inputText.text.Contains("1")) return;
-            Globals.GamePaused = false;
-            Globals.Lives = 3;
-            Globals.Score = 0;
-            Globals.CustomLevelData = inputText.text;
-            Globals.CustomLevel = true;
+            sessionData.GamePaused = false;
+            sessionData.lives = 3;
+            sessionData.Score = 0;
+            sessionData.CustomLevelData = inputText.text;
+            sessionData.customLevel = true;
             SceneManager.LoadScene("GameView");
         }
 
         public void StartGame()
         {
-            Globals.GamePaused = false;
-            Globals.Lives = 3;
-            Globals.Score = 0;
-            Globals.CustomLevel = false;
-            Globals.EndlessMode = endlessToggle.isOn;
-            Globals.StartWithEndless = endlessToggle.isOn;
+            sessionData.GamePaused = false;
+            sessionData.lives = 3;
+            sessionData.Score = 0;
+            sessionData.customLevel = false;
+            sessionData.endlessMode = endlessToggle.isOn;
+            sessionData.startWithEndless = endlessToggle.isOn;
             SceneManager.LoadScene("GameView");
         }
 
@@ -108,8 +131,8 @@ namespace GUI
 #if UNITY_STANDALONE
         try //this stops discord from displaying the "Playing Game" status, it is however in a try statement in case of failure (due to discord not being available)
         {
-            Globals.Discord.RunCallbacks();
-            var activityManager = Globals.Discord.GetActivityManager();
+            sessionData.Discord.RunCallbacks();
+            var activityManager = sessionData.Discord.GetActivityManager();
             activityManager.ClearActivity((result) =>
             {
                 Debug.Log(result == Discord.Result.Ok ? "Discord Success." : "Discord Failed.");

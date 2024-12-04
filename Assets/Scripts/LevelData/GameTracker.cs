@@ -25,14 +25,15 @@ namespace LevelData
         public Text lvlIndicatorTxt;
         public GameObject indicator;
         public GameObject safetyNet;
-        public GameObject scoreDialog;
         public GameObject player;
         public GameObject ball;
-        public int currentLevel;
+        public GameObject heartContainer;
+        public GameSessionData sessionData;
         public Vector2 startingCoords = new(150, 783);
 
         private int _lives;
         private bool _levelLoaded;
+        private bool _levelComplete;
 
         // Start is called before the first frame update
         private void Awake()
@@ -45,93 +46,85 @@ namespace LevelData
         // Update is called once per frame
         private void Update()
         {
-            if (_lives != Globals.Lives)
+            if (_lives != sessionData.lives)
             {
-                _lives = Globals.Lives;
+                _lives = sessionData.lives;
 
-                var lives = GameObject.FindGameObjectsWithTag("Lives");
+                var lives = new [] { heartContainer, heartContainer.transform.GetChild(0).gameObject };
                 foreach (var g in lives)
                     g.GetComponent<SpriteRenderer>().size = new(_lives * 2.54f, 2.54f); //update heart UI.
 
-                if (_lives == 0)
-                    GameOver();
+                if (_lives == 0) GameOver();
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape)) //make sure you cant accidentally unpause game
-            {
-                PauseGame();
-            }
+            if (Input.GetKeyDown(KeyCode.Escape)) TogglePauseGame();
 
-            if (!_levelLoaded)
-                RestartGame();
-            else
-                CheckLevelCompletion(); //only check level completion if there is a loaded level.
+            if (!_levelLoaded && !_levelComplete) RestartGame();
+            else CheckLevelCompletion(); //only check level completion if there is a loaded level.
         }
 
         private void LateUpdate()
         {
-            Globals.BricksRemaining = GameObject.FindGameObjectsWithTag("Brick").Length; //(non-priority) counts how many bricks are remaining.
+            sessionData.BricksRemaining = GameObject.FindGameObjectsWithTag("Brick").Length; //(non-priority) counts how many bricks are remaining.
         }
 
-        public void PauseGame()
+        public void TogglePauseGame()
         {
-            if (GameObject.FindGameObjectsWithTag("Brick").Length <= 0 || Globals.Lives == 0) return; //only allow pausing when it's not game over, and the level is not complete, otherwise the UI will overlap.
-            Globals.GamePaused = !Globals.GamePaused;
-            Time.timeScale = Globals.GamePaused ? 0f : 1f; //setting the time scale to 0 completely halts every physics simulation that is happening.
-            pauseText.gameObject.SetActive(Globals.GamePaused);
-            continueGameButton.gameObject.SetActive(Globals.GamePaused);
-            gameObject.GetComponent<SoundHelper>().PauseSound();
+            if (GameObject.FindGameObjectsWithTag("Brick").Length <= 0 || sessionData.lives == 0) return; //only allow pausing when it's not game over, and the level is not complete, otherwise the UI will overlap.
+            sessionData.GamePaused = !sessionData.GamePaused;
+            Time.timeScale = sessionData.GamePaused ? 0f : 1f; //setting the time scale to 0 completely halts every physics simulation that is happening.
+            pauseText.gameObject.SetActive(sessionData.GamePaused);
+            continueGameButton.gameObject.SetActive(sessionData.GamePaused);
+            gameObject.GetComponent<SoundHelper>().TogglePauseSound();
             GameObject.Find("pnlSettings")?.SetActive(false);
         }
 
         public void LoadNextLevel()
         {
-            if (!Globals.CustomLevel)
+            if (!sessionData.customLevel)
             {
-                if (Globals.EndlessMode) //generate new endless level
+                if (sessionData.endlessMode) //generate new endless level
                 {
-                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
+                    sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
                 }
-                else if (currentLevel >= Globals.AmountOfLevels) //start endless mode after completing the main levels.
+                else if (sessionData.CurrentLevel >= sessionData.amountOfLevels) //start endless mode after completing the main levels.
                 {
-                    Globals.EndlessMode = true;
-                    Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
+                    sessionData.endlessMode = true;
+                    sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
                 }
-                currentLevel++;
-                if (Globals.Lives < 6) Globals.Lives++; else UpdateScore(100); //add a life on every level completion, if player already has 6 lives, then give 100 points instead.
-                ball.GetComponent<BallLogic>().levelMultiplier = GetComponent<GameTracker>().currentLevel * 30f; //level speed increase by the level number * a constant of 30.
+                sessionData.CurrentLevel++;
+                if (sessionData.lives < 6) sessionData.lives++; else UpdateScore(100); //add a life on every level completion, if player already has 6 lives, then give 100 points instead.
+                ball.GetComponent<BallLogic>().levelMultiplier = GetComponent<GameTracker>().sessionData.CurrentLevel * 30f; //level speed increase by the level number * a constant of 30.
                 ball.GetComponent<BallLogic>().ResetSpeed(); //reset speed if speed multiplier is active.
             }
 
             LoadNextWave();
-            player.GetComponent<PlayerController>().ResetPaddlePosition();
             ball.GetComponent<BallLogic>().ResetBall();
-            Globals.GamePaused = false;
+            TogglePauseGame();
         }
 
         private void CheckLevelCompletion()
         {
-            var bricksRemaining = GameObject.FindGameObjectsWithTag("Brick");
-            switch (bricksRemaining.Length)
+            switch (sessionData.BricksRemaining)
             {
                 case 0:
                 {
-                    if (!Globals.GamePaused)
-                    {
-                        gameObject.GetComponent<SoundHelper>().StopSound(); //stop main bgm before playing victory sound.
-                        gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/LevelComplete");
-                    }
-                    Globals.GamePaused = true;
+                    if (_levelComplete) return;
+                    _levelComplete = true;
+                    sessionData.GamePaused = true;
+                    gameObject.GetComponent<SoundHelper>().StopSound(); //stop main bgm before playing victory sound.
+                    gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/LevelComplete");
                     var allBalls = GameObject.FindGameObjectsWithTag("Ball");
                     foreach (var o in allBalls)
                     {
                         o.gameObject.GetComponent<BallLogic>().PauseBall();
                     }
                     levelCompleteTxt.gameObject.SetActive(true);
-                    nextLvlButton.gameObject.SetActive(true);
+                    if (!sessionData.customLevel) nextLvlButton.gameObject.SetActive(true);
                     break;
                 }
                 case > 0:
+                    _levelComplete = false;
                     levelCompleteTxt.gameObject.SetActive(false);
                     nextLvlButton.gameObject.SetActive(false);
                     break;
@@ -140,11 +133,11 @@ namespace LevelData
 
         internal void RestartGame()
         {
-            Globals.Lives = 3;
-            Globals.Score = 0;
-            scoreText.GetComponent<Text>().text = $"Score: {Globals.Score}";
-            if (!Globals.CustomLevel) currentLevel = 1; //if custom level, reset current wave (level) also.
-            if (Globals.EndlessMode) Globals.EndlessLevelData = EndlessLevelGenerator.Generate();
+            sessionData.lives = 3;
+            sessionData.Score = 0;
+            scoreText.GetComponent<Text>().text = $"Score: {sessionData.Score}";
+            if (!sessionData.customLevel) sessionData.CurrentLevel = 1; //if custom level, reset current wave (level) also.
+            if (sessionData.endlessMode) sessionData.EndlessLevelData = EndlessLevelGenerator.Generate(sessionData.Random);
         
             LoadNextWave();
 
@@ -152,9 +145,9 @@ namespace LevelData
             playerController.ResetPaddlePosition();
             playerController.cancelFire = playerController.IsFiring; // cancel laser beams.
             ball.GetComponent<BallLogic>().ResetBall();
-            Globals.GamePaused = false;
+            sessionData.GamePaused = false;
             pauseText.gameObject.GetComponent<Animator>().StartPlayback();
-            pauseText.gameObject.SetActive(Globals.GamePaused);
+            pauseText.gameObject.SetActive(sessionData.GamePaused);
             pauseText.gameObject.GetComponent<Text>().text = "GAME PAUSED";
             continueGameButton.gameObject.SetActive(true);
 
@@ -171,7 +164,7 @@ namespace LevelData
             var allObjects = GameObject.FindGameObjectsWithTag("Brick");
             foreach (var obj in allObjects) 
             {
-                obj.AddComponent<Rigidbody2D>().gravityScale = Globals.Random.Next(3, 10);
+                obj.AddComponent<Rigidbody2D>().gravityScale = sessionData.Random.Next(3, 10);
                 obj.GetComponent<Rigidbody2D>().AddForceAtPosition(new(100, 100), Vector2.zero);
             }
         }
@@ -182,12 +175,12 @@ namespace LevelData
             gameObject.GetComponent<SoundHelper>().StopSound();
             gameObject.GetComponent<SoundHelper>().PlaySound("Sound/BGM/Conditions/GameOver");
             MakeAllRemainingBricksFall();
-            Globals.GamePaused = true;
-            pauseText.SetActive(Globals.GamePaused);
+            sessionData.GamePaused = true;
+            pauseText.SetActive(sessionData.GamePaused);
             pauseText.GetComponent<Animator>().StopPlayback();
             pauseText.GetComponent<Text>().text = "GAME OVER";
             continueGameButton.gameObject.SetActive(false);
-            Globals.EndlessMode = Globals.StartWithEndless;
+            sessionData.endlessMode = sessionData.startWithEndless;
         }
 
         /// <summary>
@@ -213,7 +206,7 @@ namespace LevelData
             allObjects = GameObject.FindGameObjectsWithTag("Ball");
             foreach (var o in allObjects)
             {
-                if (o.GetComponent<BallLogic>().IsFake) Destroy(o); else o.GetComponent<BallLogic>().ActivateFireBall(false);
+                if (o.GetComponent<BallLogic>().IsFake) Destroy(o);
             }
             allObjects = GameObject.FindGameObjectsWithTag("Indicator");
             foreach (var o in allObjects)
@@ -229,33 +222,32 @@ namespace LevelData
         /// <summary>
         /// Load data from the next level
         /// </summary>
-        internal void LoadNextWave()
+        private void LoadNextWave()
         {
-            gameObject.GetComponent<SoundHelper>().PlaySound($"Sound/BGM/BGM_{Globals.Random.Next(1, 6)}", true);
-
-            var currentCoords = startingCoords;
-            var width = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
-            var height = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.y;
+            gameObject.GetComponent<SoundHelper>().PlaySound($"Sound/BGM/BGM_{sessionData.Random.Next(1, 6)}", true);
             DestroyAllBricksAndPowerups();
-            Time.timeScale = 1f;
-            var tempBrick = brickPrefab;
-            tempBrick.GetComponent<BrickComponent>().colour = BrickColours.Purple;
             string levelStruct;
-            if (Globals.CustomLevel)
+            if (sessionData.customLevel)
             {
-                levelStruct = Globals.CustomLevelData;
+                levelStruct = sessionData.CustomLevelData;
                 lvlIndicatorTxt.text = "Custom";
             }
-            else if (Globals.EndlessMode)
+            else if (sessionData.endlessMode)
             {
-                levelStruct = Globals.EndlessLevelData;
-                lvlIndicatorTxt.text = $"Endless {currentLevel}";
+                levelStruct = sessionData.EndlessLevelData;
+                lvlIndicatorTxt.text = $"Endless {sessionData.CurrentLevel}";
             }
             else
             {
-                levelStruct = Resources.Load<TextAsset>($"Levels/level{currentLevel}").text;
-                lvlIndicatorTxt.text = $"Level {currentLevel}";
+                levelStruct = Resources.Load<TextAsset>($"Levels/level{sessionData.CurrentLevel}").text;
+                lvlIndicatorTxt.text = $"Level {sessionData.CurrentLevel}";
             }
+            
+            var currentCoords = startingCoords;
+            var width = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
+            var height = brickPrefab.GetComponent<SpriteRenderer>().bounds.size.y;
+            var tempBrick = brickPrefab;
+            tempBrick.GetComponent<BrickComponent>().colour = BrickColours.Purple;
             foreach (var c in levelStruct)
             {
                 switch (c)
@@ -280,12 +272,12 @@ namespace LevelData
 
         public void UpdateScore(int scoreToAdd)
         {
-            if (Globals.GamePaused) return;
-            scoreToAdd = Mathf.FloorToInt(scoreToAdd * Globals.ScoreMultiplier);
+            if (sessionData.GamePaused) return;
+            scoreToAdd = Mathf.FloorToInt(scoreToAdd * sessionData.scoreMultiplier);
             Instantiate(indicator, player.transform).GetComponent<PointsIndicator>().ShowPoints(scoreToAdd);
 
-            Globals.Score += scoreToAdd;
-            scoreText.GetComponent<Text>().text = $"Score: {Globals.Score}";
+            sessionData.Score += scoreToAdd;
+            scoreText.GetComponent<Text>().text = $"Score: {sessionData.Score}";
         }
     }
 }
