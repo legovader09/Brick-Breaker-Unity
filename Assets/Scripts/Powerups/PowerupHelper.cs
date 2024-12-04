@@ -28,7 +28,8 @@ namespace Powerups
         /// <param name="duration">The duration for the power-up effect.</param>
         /// <param name="onStartAction">Action to execute at the start of the power-up.</param>
         /// <param name="onEndAction">Action to execute when the power-up ends.</param>
-        public void ActivatePowerup(PowerupCodes id, float duration, Action onStartAction, Action onEndAction)
+        /// <param name="onExpiringAction">Action to execute when the warning threshold has been reached.</param>
+        public void ActivatePowerup(PowerupCodes id, float duration, Action onStartAction, Action onEndAction, Action onExpiringAction = null)
         {
             _guiHelper.AddPowerupToSidebar(id);
             if (_remainingDurations.TryAdd(id, 0)) onStartAction?.Invoke();
@@ -41,7 +42,7 @@ namespace Powerups
             }
 
             if (_activePowerupCoroutines.ContainsKey(id)) return;
-            var coroutine = StartCoroutine(PowerupRoutine(id, onEndAction));
+            var coroutine = StartCoroutine(PowerupRoutine(id, onEndAction, onExpiringAction));
             _activePowerupCoroutines[id] = coroutine;
         }
         
@@ -61,7 +62,7 @@ namespace Powerups
             if (_remainingDurations.ContainsKey(id)) _remainingDurations.Remove(id);
         }
         
-        private IEnumerator PowerupRoutine(PowerupCodes id, Action onEndAction)
+        private IEnumerator PowerupRoutine(PowerupCodes id, Action onEndAction, Action onExpiringAction)
         {
             while (_remainingDurations[id] > 0)
             {
@@ -69,6 +70,7 @@ namespace Powerups
                 {
                     if (!_warningCoroutines.ContainsKey(id))
                     {
+                        onExpiringAction?.Invoke();
                         var warningCoroutine = StartCoroutine(_guiHelper.ShowPowerupExpiring(id));
                         _warningCoroutines[id] = warningCoroutine;
                     }

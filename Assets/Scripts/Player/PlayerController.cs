@@ -19,6 +19,8 @@ namespace Player
         public GameObject laserBeamPrefab;
         public GameObject paddleBase;
         public bool cancelFire;
+        public Transform laserBeamPos1;
+        public Transform laserBeamPos2;
         private Vector2 _mousePos;
         private bool _hasBallAttached = true;
         private Vector2 _originalPosition;
@@ -144,6 +146,7 @@ namespace Player
         /// <param name="id">The ID of the powerup that has been collided with.</param>
         private void ActivatePowerup(PowerupCodes id)
         {
+            var paddleSynchronizer = paddleBase.GetComponent<PaddleSynchronizer>();
             switch (id)
             {
                 default:
@@ -160,19 +163,13 @@ namespace Player
                     _gameTracker.UpdateScore(500);
                     break;
                 case PowerupCodes.SlowBall:
-                    var slowCall = _ball.GetComponent<BallLogic>().ChangeSpeed(2); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
-                    StopCoroutine(slowCall);
-                    StartCoroutine(slowCall);
+                    _powerupHelper.ActivatePowerup(id, 10f, () => _ball.GetComponent<BallLogic>().ChangeSpeed(2), () => _ball.GetComponent<BallLogic>().ChangeSpeed(0));
                     _gameTracker.UpdateScore(20);
-                    _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.FastBall);
                     break;
                 case PowerupCodes.FastBall:
-                    var speedCall = _ball.GetComponent<BallLogic>().ChangeSpeed(1); //setting the function to a IEnumerator variable allows me to stop the coroutine and restart it.
-                    StopCoroutine(speedCall);
-                    StartCoroutine(speedCall);
+                    _powerupHelper.ActivatePowerup(id, 10f, () => _ball.GetComponent<BallLogic>().ChangeSpeed(1), () => _ball.GetComponent<BallLogic>().ChangeSpeed(0));
                     _gameTracker.UpdateScore(40);
-                    _powerupUI.AddPowerupToSidebar(id);
                     _powerupUI.RemovePowerupFromSidebar(PowerupCodes.SlowBall);
                     break;
                 case PowerupCodes.TripleBall:
@@ -209,16 +206,24 @@ namespace Player
                     }
                     break;
                 case PowerupCodes.ShrinkPaddle:
-                    paddleBase.GetComponent<PaddleSynchronizer>().ModifyPaddleSize(.80f);
+                    if (_powerupUI.CheckIfPowerupExists(PowerupCodes.GrowPaddle))
+                    {
+                        paddleSynchronizer.SetPaddleSize(1);
+                        _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
+                    }
+                    paddleSynchronizer.ModifyPaddleSize(.80f);
                     _gameTracker.UpdateScore(50);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.GrowPaddle);
                     break;
                 case PowerupCodes.GrowPaddle:
-                    paddleBase.GetComponent<PaddleSynchronizer>().ModifyPaddleSize(1.2f);
+                    if (_powerupUI.CheckIfPowerupExists(PowerupCodes.ShrinkPaddle))
+                    {
+                        paddleSynchronizer.SetPaddleSize(1);
+                        _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
+                    }
+                    paddleSynchronizer.ModifyPaddleSize(1.2f);
                     _gameTracker.UpdateScore(20);
                     _powerupUI.AddPowerupToSidebar(id);
-                    _powerupUI.RemovePowerupFromSidebar(PowerupCodes.ShrinkPaddle);
                     break;
                 case PowerupCodes.LaserBeam:
                     StartCoroutine(FireBeams());
@@ -232,7 +237,28 @@ namespace Player
                         _gameTracker.UpdateScore(250);
                     break;
                 case PowerupCodes.SafetyNet:
-                    _powerupHelper.ActivatePowerup(id, 10f, () => _gameTracker.safetyNet.SetActive(true), () => _gameTracker.safetyNet.SetActive(false));
+                    _powerupHelper.ActivatePowerup(id, 10f, 
+                        () => _gameTracker.safetyNet.SetActive(true), 
+                        () => _gameTracker.safetyNet.SetActive(false),
+                        () =>
+                        {
+                            StartCoroutine(Flicker());
+                            return;
+
+                            IEnumerator Flicker()
+                            {
+                                var image = _gameTracker.safetyNet.GetComponent<SpriteShapeRenderer>();
+
+                                const int blinkCount = 12;
+                                const float halfBlinkDuration = 0.25f;
+
+                                for (var i = 0; i < blinkCount; i++)
+                                {
+                                    image.color = new (image.color.r, image.color.g, image.color.b, i % 2 == 0 ? 0.8f : 0.9f);
+                                    yield return new WaitForSeconds(halfBlinkDuration);
+                                }
+                            }
+                        });
                     _gameTracker.UpdateScore(50);
                     break;
                 case PowerupCodes.DoublePoints:
@@ -247,6 +273,9 @@ namespace Player
                     _powerupHelper.RemovePowerup(PowerupCodes.DoublePoints);
                     _powerupHelper.ActivatePowerup(id, 10f, () => sessionData.scoreMultiplier = .5f, () => sessionData.scoreMultiplier = 1f);
                     break;
+                case PowerupCodes.Magnetic:
+                    // TODO: Add magnetic powerup functions here
+                    break;
             }
         }
 
@@ -259,18 +288,14 @@ namespace Player
                 IsFiring = true;
                 if (!sessionData.GamePaused)
                 {
-                    Instantiate(laserBeamPrefab, 
-                            GameObject.FindGameObjectWithTag("MainCamera").transform, false).transform.position = 
-                        GameObject.FindGameObjectWithTag("PlayerBeamPos1").transform.position;
+                    Instantiate(laserBeamPrefab, _mainCamera.transform).transform.position = laserBeamPos1.position;
 
                     gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Shoot_01");
 
                     yield return new WaitForSeconds(shootDelay);
                     shotsFired++;
 
-                    Instantiate(laserBeamPrefab, 
-                            GameObject.FindGameObjectWithTag("MainCamera").transform, false).transform.position = 
-                        GameObject.FindGameObjectWithTag("PlayerBeamPos2").transform.position;
+                    Instantiate(laserBeamPrefab, _mainCamera.transform).transform.position = laserBeamPos2.transform.position;
 
                     gameObject.GetComponent<SoundHelper>().PlaySound("Sound/SFX/8Bit/Shoot_01");
 
@@ -278,11 +303,9 @@ namespace Player
                     shotsFired++;
                 }
                 yield return new WaitUntil(() => sessionData.GamePaused == false); //this line is iterated through if the game is running, but should the game be paused, the thread will come back tot his line again until the game is unpaused again.
-                if (cancelFire) //if after the pause check, the firing has been cancelled, exit the loop immediately.
-                {
-                    cancelFire = false;
-                    break;
-                }
+                if (!cancelFire) continue; //if after the pause check, the firing has been cancelled, exit the loop immediately.
+                cancelFire = false;
+                break;
             }
             _eventSystem.GetComponent<GUIHelper>().RemovePowerupFromSidebar(PowerupCodes.LaserBeam);
             IsFiring = false;

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5511927975062621666}
   m_Layer: 10
   m_Name: PaddleEdgeLeft
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52,6 +52,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -154,6 +157,10 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 1
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment:
@@ -168,6 +175,7 @@ MonoBehaviour:
   - {x: -1.7860938, y: -1.8708833}
   - {x: -1.8793483, y: -1.57446}
   - {x: -1.8999993, y: -1.462}
+  m_ShadowSegment: []
 --- !u!70 &5511927975062621666
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -176,6 +184,7 @@ CapsuleCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 798174724884131819}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -199,7 +208,8 @@ CapsuleCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: -1.6661143, y: 0.004235506}
   m_Size: {x: 0.6688697, y: 4.013218}
   m_Direction: 1
@@ -275,7 +285,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &8621134820948590817
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -286,8 +296,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -312,10 +322,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5ed6713dd32acd4a8be3c46e0607bd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sessionData: {fileID: 11400000, guid: 50704f95af5bd0d4a9160b66fa42bc5c, type: 2}
   laserBeamPrefab: {fileID: 3168994323079038273, guid: 1f8792da929c26740967ce0018e7eb21, type: 3}
-  powerupHelper: {fileID: 4848912777726280976, guid: 0f8fa13535faa524faea4a9aa74ef535, type: 3}
   paddleBase: {fileID: 7380809955591548100}
   cancelFire: 0
+  laserBeamPos1: {fileID: 852144709600725225}
+  laserBeamPos2: {fileID: 7733856258184650057}
 --- !u!82 &355815046214862025
 AudioSource:
   m_ObjectHideFlags: 0
@@ -327,6 +339,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -424,7 +437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f82f6fa4832c23644b2a65be84f05c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioType: 1
+  audioTypes: 1
 --- !u!114 &7856526084141546179
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -595,7 +608,7 @@ GameObject:
   - component: {fileID: 1863432023664050132}
   m_Layer: 10
   m_Name: PaddleEdgeRight
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -633,6 +646,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -735,9 +751,14 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 1
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment: []
+  m_ShadowSegment: []
 --- !u!70 &1863432023664050132
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -746,6 +767,7 @@ CapsuleCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6768309519444029847}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -769,7 +791,8 @@ CapsuleCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: -1.6661143, y: 0.004235506}
   m_Size: {x: 0.6688697, y: 4.013218}
   m_Direction: 1
@@ -819,7 +842,7 @@ GameObject:
   - component: {fileID: 3488625794856354559}
   m_Layer: 10
   m_Name: PaddleBase
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -858,6 +881,9 @@ SpriteShapeRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -968,9 +994,14 @@ MonoBehaviour:
   m_EnableTangents: 0
   m_GeometryCached: 1
   m_UTess2D: 0
+  m_UpdateShadow: 0
+  m_ShadowDetail: 16
+  m_ShadowOffset: 0.5
+  m_BoundsScale: 2
   m_Creator: {fileID: 0}
   m_Modifiers: []
   m_ColliderSegment: []
+  m_ShadowSegment: []
 --- !u!61 &933120439089090238
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -979,6 +1010,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7380809955591548100}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -1002,7 +1034,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -1013,7 +1046,6 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  serializedVersion: 2
   m_Size: {x: 3.2600002, y: 4.0000005}
   m_EdgeRadius: 0
 --- !u!114 &3488625794856354559

@@ -158,19 +158,9 @@ namespace Player
         /// Changes ball speed from powerup
         /// </summary>
         /// <param name="state">0 = default, 1 = fast, 2 = slow</param>
-        internal IEnumerator ChangeSpeed(int state)
+        internal void ChangeSpeed(int state)
         {
             ChangeSpeedInternal(state);
-
-            if (state == 0) yield break;
-            //reset speed back to normal after 5 seconds.
-            yield return new WaitForSeconds(2f);
-
-            StartCoroutine(_guiHelper.ShowPowerupExpiring(state == 1 ? PowerupCodes.FastBall : PowerupCodes.SlowBall));
-            yield return new WaitForSeconds(3f);
-
-            ChangeSpeedInternal(0);
-            _guiHelper.RemovePowerupFromSidebar(state == 1 ? PowerupCodes.FastBall : PowerupCodes.SlowBall);
         }
 
         private void ChangeSpeedInternal(int state)

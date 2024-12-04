@@ -61,6 +61,7 @@ namespace GUI
 
         public void SetVolumeSlider(Slider g)
         {
+            // TODO: Reusable settings component + Add username reset in settings
             switch (g.gameObject.name)
             {
                 case "SFXSlider":
