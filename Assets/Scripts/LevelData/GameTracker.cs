@@ -108,7 +108,7 @@ namespace LevelData
         {
             switch (sessionData.BricksRemaining)
             {
-                case 0:
+                case <= 0:
                 {
                     if (_levelComplete) return;
                     _levelComplete = true;

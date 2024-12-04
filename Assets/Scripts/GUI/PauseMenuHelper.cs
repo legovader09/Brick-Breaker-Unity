@@ -21,7 +21,7 @@ namespace GUI
         
         public void CloseGame()
         {
-            if (sessionData.Score > 100 && sessionData.lives == 0 && !sessionData.customLevel)
+            if (sessionData.Score > 100 && !sessionData.customLevel)
             {
                 _exitMode = true;
                 ShowSubmitScoreUI();
