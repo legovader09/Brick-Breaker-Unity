@@ -22,24 +22,32 @@ namespace GUI
         /// <returns></returns>
         internal IEnumerator PostHighscore(int score, int level, Action<bool> completeAction)
         {
-            var postSuccess = false;
             var client = sessionData.Connection?.Client;
             if (client == null)
             {
                 completeAction(false);
                 yield break;
             }
-            try
-            {
-                client.Leaderboards.Set("highscores", "score", score, null);
-                client.Leaderboards.Set("highscores", "levels", level, null);
-                postSuccess = true;
-            }
-            catch (Exception ex)
-            {
-                Debug.Log($"An error occured while posting highscore: {ex.Message}");
-            }
-            completeAction(postSuccess);
+            
+            bool? postSuccess = null;
+            long? highestScore = null;
+            long? highestLevel = null;
+
+            client.Leaderboards.GetNeighbourhood("highscores", "score", 0, 1, null,
+                entry => highestScore = entry.Length > 0 ? Math.Max(entry[0].Score, score) : score,
+                _ => highestScore = score);
+            client.Leaderboards.GetNeighbourhood("highscores", "levels", 0, 1, null,
+                entry => highestLevel = entry.Length > 0 ? Math.Max(entry[0].Score, level) : level,
+                _ => highestLevel = level);
+                
+            yield return new WaitUntil(() => highestScore != null && highestLevel != null);
+            client.Leaderboards.Set("highscores", "levels", (long)highestLevel!, 
+                _ => postSuccess = true, _ => postSuccess = false);
+            client.Leaderboards.Set("highscores", "score", (long)highestScore!,
+                _ => postSuccess = true, _ => postSuccess = false);
+
+            yield return new WaitUntil(() => postSuccess != null);
+            completeAction((bool)postSuccess!);
             yield return true;
         }
 
