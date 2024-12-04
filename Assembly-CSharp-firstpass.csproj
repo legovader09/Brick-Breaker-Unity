@@ -800,9 +800,6 @@
     <Reference Include="PsdPlugin">
       <HintPath>C:\Users\Administrator\source\repos\Brick-Breaker-Unity\Library\ScriptAssemblies\PsdPlugin.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.Multiplayer.Center.Common">
-      <HintPath>C:\Users\Administrator\source\repos\Brick-Breaker-Unity\Library\ScriptAssemblies\Unity.Multiplayer.Center.Common.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.AI.Navigation.Updater">
       <HintPath>C:\Users\Administrator\source\repos\Brick-Breaker-Unity\Library\ScriptAssemblies\Unity.AI.Navigation.Updater.dll</HintPath>
     </Reference>
@@ -844,9 +841,6 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>C:\Users\Administrator\source\repos\Brick-Breaker-Unity\Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Multiplayer.Center.Editor">
-      <HintPath>C:\Users\Administrator\source\repos\Brick-Breaker-Unity\Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.2D.SpriteShape.Editor">
       <HintPath>C:\Users\Administrator\source\repos\Brick-Breaker-Unity\Library\ScriptAssemblies\Unity.2D.SpriteShape.Editor.dll</HintPath>

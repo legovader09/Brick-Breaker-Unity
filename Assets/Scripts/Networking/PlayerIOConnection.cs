@@ -1,4 +1,5 @@
 ﻿
+using Constants;
 using PlayerIOClient;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ namespace Networking
             Debug.Log("Starting online room...");
             PlayerIO.UseSecureApiRequests = true;
             PlayerIO.Authenticate(GameID, ConnectionID,
-                new() { { "userId", PlayerPrefs.GetString("Username") } },
+                new() { { "userId", PlayerPrefs.GetString(ConfigConstants.Username) } },
                 null, delegate (Client client)
                 {
                     Debug.Log("Successfully connected to Player.IO");

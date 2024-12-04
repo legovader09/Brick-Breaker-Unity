@@ -3963,6 +3963,30 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2851319859809871471, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2851319859809871471, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1183400394}
+    - target: {fileID: 2851319859809871471, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ResetUsername
+      objectReference: {fileID: 0}
+    - target: {fileID: 2851319859809871471, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: GUI.MainMenu, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2851319859809871471, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2851319859809871471, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 4701144722207794110, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -4033,11 +4057,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4701144722957466985, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: -1020.06323
+      value: -1020.0632
       objectReference: {fileID: 0}
     - target: {fileID: 4701144722957466985, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
       propertyPath: m_SizeDelta.y
-      value: -464.91077
+      value: -415.5951
       objectReference: {fileID: 0}
     - target: {fileID: 4701144722957466985, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4073,7 +4097,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4701144722957466985, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -86
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4701144722957466985, guid: 737552be816281c4ca5d2427e6d63fe8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

@@ -20,16 +20,31 @@ namespace GUI
         // Start is called before the first frame update
         private void Start()
         {
-            if (!PlayerPrefs.HasKey("username") || PlayerPrefs.GetString("username").Trim().Length == 0)
+            if (!PlayerPrefs.HasKey(ConfigConstants.Username) || PlayerPrefs.GetString(ConfigConstants.Username).Trim().Length == 0)
             {
                 StartCoroutine(Dialog.ShowInputDialog(dialogPrefab, val =>
                 {
-                    PlayerPrefs.SetString("username", val);
+                    PlayerPrefs.SetString(ConfigConstants.Username, val);
                     PlayerPrefs.Save();
+                    Initialize();
                 },
                 "Pick a Username", "This will be shown on the leaderboard and online matches.", okOnly: true));
             }
-            
+            else
+            {
+                Initialize();
+            }
+
+            // add quit function
+#if UNITY_STANDALONE
+        btnQuit.onClick.AddListener(Quit);
+#elif UNITY_WEBGL
+            btnQuit.gameObject.SetActive(false);
+#endif
+        }
+
+        private void Initialize()
+        {
             sessionData.Initialize(success =>
             {
                 GetComponent<SoundHelper>().PlaySound($"Sound/BGM/Menu_{sessionData.Random.Next(1, 3)}", true); //play random BGM
@@ -44,13 +59,6 @@ namespace GUI
                 StartCoroutine(Dialog.ShowMessageDialog(dialogPrefab, _ => sessionData.ErrorMessage = string.Empty,
                     "Error", sessionData.ErrorMessage));
             }
-
-            // add quit function
-#if UNITY_STANDALONE
-        btnQuit.onClick.AddListener(Quit);
-#elif UNITY_WEBGL
-            btnQuit.gameObject.SetActive(false);
-#endif
         }
 
         // check for ESC keypress every frame. For quitting game.
@@ -75,14 +83,25 @@ namespace GUI
             }
         }
 
+        public void ResetUsername()
+        {
+            PlayerPrefs.DeleteKey(ConfigConstants.Username);
+            PlayerPrefs.Save();
+        #if !UNITY_EDITOR
+            System.Diagnostics.Process.Start(Application.dataPath.Replace("_Data", ".exe"));
+            Application.Quit();
+        #endif
+        }
+        
         public void HideUIMenu(GameObject menuPanel) => menuPanel.SetActive(false);
         public void ShowUIMenu(GameObject menuPanel)
         {
             menuPanel.SetActive(true);
 
             if (menuPanel.name != "pnlSettings") return;
-            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.SFXVolumeSetting); //loads sfx and bgm volumes from PlayerPrefs.
-            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.BGMVolumeSetting);
+            GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.SFXVolumeSetting);
+            GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.BGMVolumeSetting); 
+            GameObject.Find("txtUsername").GetComponent<Text>().text = PlayerPrefs.GetString(ConfigConstants.Username);
         }
 
         public void LoadCredit(Text text) => text.text = Resources.Load<TextAsset>("Credits").text; //Loads Credits.txt from file to display.
