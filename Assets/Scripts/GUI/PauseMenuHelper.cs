@@ -34,7 +34,11 @@ namespace GUI
         {
             StartCoroutine(Dialog.ShowMessageDialog(dialogPrefab, val =>
                 {
-                    if (val != DialogResult.Confirm) return;
+                    if (val != DialogResult.Confirm)
+                    {
+                        OnSubmitScore();
+                        return;
+                    }
                     StartCoroutine(_eventSystem.GetComponent<HighscoreController>().PostHighscore(sessionData.Score,
                         sessionData.CurrentLevel, success =>
                         {

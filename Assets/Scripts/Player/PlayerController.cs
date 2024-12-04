@@ -32,6 +32,7 @@ namespace Player
         private GameObject _eventSystem;
         private Vector2 _mouseTargetPosition;
         private PowerupHelper _powerupHelper;
+        private Coroutine _safetyNetTracker;
 
         /// <summary>Used to indicate whether the paddle is firing laser beams.</summary> 
         public bool IsFiring { get; private set; }
@@ -237,24 +238,28 @@ namespace Player
                         _gameTracker.UpdateScore(250);
                     break;
                 case PowerupCodes.SafetyNet:
+                    var image = _gameTracker.safetyNet.GetComponent<SpriteShapeRenderer>();
+                    if (_safetyNetTracker != null)
+                    {
+                        StopCoroutine(_safetyNetTracker);
+                        image.color = new (image.color.r, image.color.g, image.color.b, 1f);
+                    }
                     _powerupHelper.ActivatePowerup(id, 10f, 
                         () => _gameTracker.safetyNet.SetActive(true), 
                         () => _gameTracker.safetyNet.SetActive(false),
                         () =>
                         {
-                            StartCoroutine(Flicker());
+                            _safetyNetTracker = StartCoroutine(Flicker());
                             return;
 
                             IEnumerator Flicker()
                             {
-                                var image = _gameTracker.safetyNet.GetComponent<SpriteShapeRenderer>();
-
                                 const int blinkCount = 12;
                                 const float halfBlinkDuration = 0.25f;
 
                                 for (var i = 0; i < blinkCount; i++)
                                 {
-                                    image.color = new (image.color.r, image.color.g, image.color.b, i % 2 == 0 ? 0.8f : 0.9f);
+                                    image.color = new (image.color.r, image.color.g, image.color.b, i % 2 == 0 ? 0.8f : 1f);
                                     yield return new WaitForSeconds(halfBlinkDuration);
                                 }
                             }

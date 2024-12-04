@@ -41,6 +41,7 @@ namespace LevelData
             pauseText.gameObject.SetActive(false);
             continueGameButton.gameObject.SetActive(false);
             safetyNet.SetActive(false);
+            if (Time.timeScale == 0) Time.timeScale = 1;
         }
 
         // Update is called once per frame
@@ -145,7 +146,7 @@ namespace LevelData
             playerController.ResetPaddlePosition();
             playerController.cancelFire = playerController.IsFiring; // cancel laser beams.
             ball.GetComponent<BallLogic>().ResetBall();
-            sessionData.GamePaused = false;
+            if (sessionData.GamePaused) TogglePauseGame();
             pauseText.gameObject.GetComponent<Animator>().StartPlayback();
             pauseText.gameObject.SetActive(sessionData.GamePaused);
             pauseText.gameObject.GetComponent<Text>().text = "GAME PAUSED";

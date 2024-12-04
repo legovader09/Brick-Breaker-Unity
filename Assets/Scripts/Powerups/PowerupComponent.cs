@@ -39,7 +39,7 @@ namespace Powerups
                 _ => PowerupCodes.Pts50
             };
 
-            SelectPowerupType(powerupCode);
+            SelectPowerupType(PowerupCodes.SafetyNet);
             Debug.Log($"Powerup Component \"{Enum.GetName(typeof(PowerupCodes), powerupCode)}\" Spawned! Powerup Code: " + PowerupType);
         }
 

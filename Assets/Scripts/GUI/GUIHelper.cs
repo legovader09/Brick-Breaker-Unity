@@ -34,7 +34,14 @@ namespace GUI
         /// <param name="powerup">The relevant <see cref="PowerupCodes"/> to add.</param>
         internal void AddPowerupToSidebar(PowerupCodes powerup)
         {
-            if (CheckIfPowerupExists(powerup)) return;
+            var item = _powerList.FirstOrDefault(item => item.PowerupCode == powerup);
+            if (item != null)
+            {
+                var icon = item.PowerupPrefab.GetComponent<Image>();
+                SetImageOpacity(icon, 1f);
+                return;
+            }
+            
             var indicator = Instantiate(indicatorPrefab, parent.transform, false);
             indicator.transform.localPosition = new(initPosition.x,
                 initPosition.y + indicator.GetComponent<RectTransform>().rect.height * _powerList.Count, initPosition.z);
