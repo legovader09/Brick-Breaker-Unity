@@ -1,2 +1,3 @@
 # Brick-Breaker-Unity
- Old uni project
+
+Download [here](https://github.com/legovader09/Brick-Breaker-Unity/releases/tag/1.1)
