@@ -180,6 +180,7 @@ namespace Player
                 case PowerupCodes.TripleBall:
                     _hasBallAttached = false;
                     _gameTracker.UpdateScore(50);
+                    StartCoroutine(ActivateGracePeriod());
                     var ballCollection = GameObject.FindGameObjectsWithTag("Ball");
                     if (ballCollection.Length > 15)
                     {
@@ -203,13 +204,19 @@ namespace Player
                             for (var i = 0; i < 2; i++)
                             {
                                 var instance = Instantiate(ball, ball.transform.parent, false);
-                                instance.GetComponent<BallLogic>().IsFake = true;
-                                instance.GetComponent<SpriteShapeRenderer>().color = colorSequence[(currentColorIndex + 1) % colorSequence.Length];
-                                instance.GetComponent<BallLogic>().stuckToPlayer = false;
+                                instance.GetComponent<BallLogic>().DeployFakeBall(colorSequence[(currentColorIndex + 1) % colorSequence.Length]);
                             }
                         }
                     }
                     break;
+
+                    IEnumerator ActivateGracePeriod()
+                    {
+                        var layer = _ball.gameObject.layer;
+                        Physics2D.IgnoreLayerCollision(layer, layer, true);
+                        yield return new WaitForSeconds(.2f);
+                        Physics2D.IgnoreLayerCollision(layer, layer, false);
+                    }
                 case PowerupCodes.ShrinkPaddle:
                     if (_powerupUI.CheckIfPowerupExists(PowerupCodes.GrowPaddle))
                     {

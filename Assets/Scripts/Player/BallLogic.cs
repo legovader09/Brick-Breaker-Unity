@@ -286,5 +286,12 @@ namespace Player
             _isFireBall = state;
             gameObject.GetComponent<SpriteShapeRenderer>().color = state ? Color.red : _originalColor;
         }
+
+        public void DeployFakeBall(Color color)
+        {
+            stuckToPlayer = false;
+            IsFake = true;
+            gameObject.GetComponent<SpriteShapeRenderer>().color = color;
+        }
     }
 }
