@@ -173,17 +173,17 @@ namespace Player
                     _currentMaxSpeed = maxSpeed;
                     break;
                 case 1:
-                    _currentMinSpeed = minSpeed + 150f;
-                    _currentMaxSpeed = maxSpeed + 150f;
+                    _currentMinSpeed = minSpeed + 300f;
+                    _currentMaxSpeed = maxSpeed + 400f;
                     break;
                 case 2:
-                    _currentMinSpeed = minSpeed - 200f;
-                    _currentMaxSpeed = maxSpeed - 200f;
+                    _currentMinSpeed = minSpeed - 300f;
+                    _currentMaxSpeed = maxSpeed - 400f;
                     break;
             }
             _currentMinSpeed += levelMultiplier;
             _currentMaxSpeed += levelMultiplier;
-            speed = maxSpeed;
+            _rigidBody.linearVelocity = currentVelocity.normalized * _currentMaxSpeed;
         }
 
         /// <summary>
