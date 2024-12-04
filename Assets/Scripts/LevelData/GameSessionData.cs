@@ -34,6 +34,7 @@ namespace LevelData
 
         internal void ResetData()
         {
+            scoreMultiplier = 1f;
             CurrentLevel = 0;
             BricksRemaining = 0;
             Score = 0;

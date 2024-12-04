@@ -70,7 +70,6 @@ namespace GUI
 
         public void SetVolumeSlider(Slider g)
         {
-            // TODO: Reusable settings component + Add username reset in settings
             switch (g.gameObject.name)
             {
                 case "SFXSlider":
@@ -98,6 +97,7 @@ namespace GUI
         {
             menuPanel.SetActive(true);
 
+            // TODO: Reusable settings component + Add username reset in settings
             if (menuPanel.name != "pnlSettings") return;
             GameObject.Find("SFXSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.SFXVolumeSetting);
             GameObject.Find("BGMSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat(ConfigConstants.BGMVolumeSetting); 
